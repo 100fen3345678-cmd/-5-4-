@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - 終極雲端共編版</title>
+  <title>Seoul Trip - 雲端即時共編版 (含資訊彈窗)</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -158,6 +158,18 @@
       <div class="modal-actions">
         <button class="btn-cancel" onclick="document.getElementById('blockSelectModal').style.display='none'">取消</button>
         <button class="btn-save" onclick="confirmAddBlock()">確定加入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 商家資訊 視窗 -->
+  <div class="modal-overlay" id="infoModal">
+    <div class="modal">
+      <h3 style="margin-top:0; font-size:18px;" id="infoName"></h3>
+      <span id="infoTag" style="display:inline-block; font-size:12px; padding:4px 8px; background:#eee; border-radius:6px; color:#555; margin-bottom:12px; font-weight:bold;"></span>
+      <p id="infoDesc" style="font-size:14px; color:#666; line-height:1.6; margin-top:0;"></p>
+      <div class="modal-actions">
+        <button class="btn-save" style="width:100%;" onclick="document.getElementById('infoModal').style.display='none'">關閉</button>
       </div>
     </div>
   </div>
@@ -390,7 +402,8 @@
           let subItemsHtml = `<div class="sub-items-container" data-day="${dayIndex}" data-event="${evIndex}">`;
           if (ev.subItems && ev.subItems.length > 0) {
             ev.subItems.forEach((sub, subIdx) => {
-               subItemsHtml += `<span class="sub-item-chip" onclick="event.stopPropagation(); updateMap('${sub.mapQuery}', null)">${sub.name} <b onclick="event.stopPropagation(); removeSubItem(${dayIndex}, ${evIndex}, ${subIdx})">×</b></span>`;
+               // 替換為包含資訊彈窗的點擊事件
+               subItemsHtml += `<span class="sub-item-chip" onclick="event.stopPropagation(); viewSubItem('${sub.name.replace(/'/g, "\\'")}', '${sub.mapQuery.replace(/'/g, "\\'")}')">${sub.name} <b onclick="event.stopPropagation(); removeSubItem(${dayIndex}, ${evIndex}, ${subIdx})">×</b></span>`;
             });
           }
           subItemsHtml += '</div>';
@@ -740,6 +753,29 @@
       }
       document.querySelectorAll('.timeline-item, .pocket-card').forEach(el => el.classList.remove('active-card'));
       if(cardElement) cardElement.classList.add('active-card');
+    };
+
+    // 點擊子標籤時跳出資訊視窗
+    window.viewSubItem = function(name, mapQuery) {
+      // 連動地圖
+      updateMap(mapQuery, null); 
+      
+      // 去口袋名單裡把店找出來
+      const item = pocketDB.find(p => p.name === name);
+      document.getElementById('infoName').innerText = name;
+      
+      // 將資料塞進彈出視窗
+      if (item) {
+        document.getElementById('infoTag').innerText = `📍 ${item.region} · ${item.category}`;
+        document.getElementById('infoTag').style.display = 'inline-block';
+        document.getElementById('infoDesc').innerText = item.desc || '無備註說明。';
+      } else {
+        document.getElementById('infoTag').style.display = 'none';
+        document.getElementById('infoDesc').innerText = '此項目可能是手動輸入，或已從口袋名單中刪除。';
+      }
+      
+      // 顯示視窗
+      document.getElementById('infoModal').style.display = 'flex';
     };
 
     // 啟動時立刻去雲端把大家的進度抓下來
