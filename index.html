@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V16 </title>
+  <title>Seoul Trip - V16.1 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -50,7 +50,8 @@
     .time-col { min-width: 50px; font-weight: 700; color: var(--primary); font-size: 15px; padding-top: 2px; }
     .content-col { flex-grow: 1; padding-right: 120px; }
     .content-col h3 { margin: 0 0 6px 0; font-size: 16px; }
-    .content-col p { margin: 0; font-size: 14px; color: var(--text-muted); }
+    /* 這裡加入了 white-space 和 word-break 讓換行生效且長網址不會破版 */
+    .content-col p { margin: 0; font-size: 14px; color: var(--text-muted); white-space: pre-wrap; word-break: break-word; }
     
     .sub-items-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; margin-left: 66px; padding-top: 12px; border-top: 1px dashed #eee; min-height: 36px; }
     .sub-item-chip { background: #f0f4f8; color: #333; font-size: 13px; font-weight: 600; border-radius: 20px; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden; padding: 0; }
@@ -86,7 +87,8 @@
     
     .pocket-card h4 { margin: 0 24px 4px 0; font-size: 15px; }
     .pocket-card .cat-tag { font-size: 11px; padding: 2px 6px; background: #eee; border-radius: 4px; color: #555; display: inline-block; margin-bottom: 6px; font-weight:bold; }
-    .pocket-card p { margin: 0 0 4px 0; font-size: 13px; color: var(--text-muted); }
+    /* 同樣加入換行與斷字支援 */
+    .pocket-card p { margin: 0 0 4px 0; font-size: 13px; color: var(--text-muted); white-space: pre-wrap; word-break: break-word; }
     .pocket-card .del-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 14px; cursor: pointer; color: #aaa; padding: 0; z-index: 5; }
     .pocket-card .del-btn:hover { color: var(--primary); }
 
@@ -110,6 +112,8 @@
     .btn-save { flex: 1; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .btn-cancel { flex: 1; background: #eee; color: #333; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
+    #infoDesc { white-space: pre-wrap; word-break: break-word; }
+
     @media (max-width: 768px) {
       .split-layout { flex-direction: column; padding: 12px; gap: 12px; }
       .map-pane { position: sticky; top: 110px; height: 35vh; width: 100%; z-index: 90; border-radius: 12px; }
@@ -124,7 +128,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V16 空間感知距離光譜版</p>
+      <p>V16.1 </p>
     </div>
     <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
   </div>
@@ -137,7 +141,7 @@
     <div class="list-pane" id="content-container"></div>
   </div>
 
-  <!-- 每日區域設定 Modal (動態重繪區域) -->
+  <!-- 每日區域設定 Modal -->
   <div class="modal-overlay" id="dayRegionModal">
     <div class="modal">
       <h3 style="margin-top:0;">⚙️ 設定當日目標區域</h3>
@@ -158,8 +162,8 @@
   </div>
 
   <!-- 其他 Modal -->
-  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>地圖預設關鍵字</label><input type="text" id="bMapQ"></div><div class="form-group"><label>備註</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
-  <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字</label><input type="text" id="pMapQ"></div><div class="form-group"><label>備註 (自動分類用)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區，如：水原市)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
+  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>地圖預設關鍵字</label><input type="text" id="bMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
+  <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字</label><input type="text" id="pMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區，如：水原市)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
   <div class="modal-overlay" id="blockSelectModal"><div class="modal"><h3 style="margin-top:0;">➕ 選擇區間</h3><p style="font-size:13px; color:#666;">將 <strong id="bsItemName" style="color:var(--primary)"></strong> 加入哪裡？</p><input type="hidden" id="bsDayIndex"><input type="hidden" id="bsItemMapQ"><div class="form-group"><select id="bsBlockSelect"></select></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockSelectModal').style.display='none'">取消</button><button class="btn-save" onclick="confirmAddBlock()">確定</button></div></div></div>
   <div class="modal-overlay" id="infoModal"><div class="modal"><h3 style="margin-top:0; font-size:18px;" id="infoName"></h3><span id="infoTag" style="display:inline-block; font-size:12px; padding:4px 8px; background:#eee; border-radius:6px; color:#555; margin-bottom:12px; font-weight:bold;"></span><p id="infoDesc" style="font-size:14px; color:#666; line-height:1.6; margin-top:0;"></p><div class="modal-actions"><button class="btn-save" style="width:100%;" onclick="document.getElementById('infoModal').style.display='none'">關閉</button></div></div></div>
 
@@ -167,7 +171,16 @@
     const JSONBIN_BIN_ID = '6a9da168da38895dfe4076e7'; 
     const JSONBIN_API_KEY = '$2a$10$7PzBRwuMIt9Xl3Xl1b1h/eWFHQUVbxmVKAwrj8A009EU62i2lB6EO';
 
-    // 首爾地區相對座標系統 (X, Y)
+    // 🔗 智慧網址轉換函數
+    window.linkify = function(text) {
+      if (!text) return "";
+      // 防止 XSS 並保留原本的文字
+      let safeText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      // 偵測網址並轉換為 <a> 標籤，點擊時阻止事件冒泡 (避免觸發卡片拖曳或點擊地圖)
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      return safeText.replace(urlRegex, '<a href="$1" target="_blank" onclick="event.stopPropagation()" style="color: #3182ce; text-decoration: underline; font-weight: bold;">$1</a>');
+    };
+
     const seoulCoords = {
       "望遠": {x: 15, y: 50}, "弘大": {x: 20, y: 50}, "延南": {x: 21, y: 52},
       "汝矣島": {x: 25, y: 35}, "龍山": {x: 40, y: 35}, "明洞": {x: 45, y: 50},
@@ -178,7 +191,7 @@
 
     function getDistance(r1, r2) {
       const c1 = seoulCoords[r1]; const c2 = seoulCoords[r2];
-      if(!c1 || !c2) return 999; // 找不到座標的自訂區域視為未知距離
+      if(!c1 || !c2) return 999; 
       return Math.sqrt(Math.pow(c1.x - c2.x, 2) + Math.pow(c1.y - c2.y, 2));
     }
 
@@ -186,7 +199,7 @@
     let pocketDB = [];
     let currentTabIndices = { 0: 'food', 1: 'food', 2: 'food', 3: 'food', 4: 'food' };
     let currentPocketRegion = {}; 
-    let tempSelectedRegions = []; // 用於設定視窗的暫存陣列
+    let tempSelectedRegions = [];
 
     const tabsContainer = document.getElementById('tabs-container');
     const contentContainer = document.getElementById('content-container');
@@ -280,6 +293,7 @@
           }
           subItemsHtml += '</div>';
 
+          // 使用 linkify 渲染區間備註
           html += `
             <div class="timeline-item" data-ev-index="${evIndex}" onclick="updateMap('${searchQuery}', this)">
               <div class="block-drag-handle">⋮⋮</div>
@@ -287,7 +301,7 @@
                 <div class="time-col">${ev.time}</div>
                 <div class="content-col">
                   <h3>${ev.title}</h3>
-                  <p>${ev.desc}</p>
+                  <p>${linkify(ev.desc)}</p>
                 </div>
               </div>
               ${subItemsHtml}
@@ -360,13 +374,10 @@
       });
     }
 
-    // 動態空間感知選單渲染
     window.openDayRegionModal = function(dayIndex) {
       document.getElementById('drDayIndex').value = dayIndex;
       document.getElementById('drSubtitle').value = appData[dayIndex].subtitle || '';
-      // 複製一份當前選取的區域進入暫存
       tempSelectedRegions = [...(appData[dayIndex].regions || [])];
-      
       renderDynamicRegionCheckboxes();
       document.getElementById('dayRegionModal').style.display = 'flex';
     };
@@ -377,7 +388,7 @@
       } else {
         tempSelectedRegions.push(regionName);
       }
-      renderDynamicRegionCheckboxes(); // 即時重繪顏色與分類
+      renderDynamicRegionCheckboxes(); 
     };
 
     window.renderDynamicRegionCheckboxes = function() {
@@ -385,7 +396,6 @@
       const container = document.getElementById('drCheckboxesDynamicArea');
       container.innerHTML = '';
 
-      // 若尚未選擇任何區域：顯示預設全灰介面
       if (tempSelectedRegions.length === 0) {
         let html = '<div class="region-checkbox-group">';
         allRegions.forEach(r => {
@@ -398,11 +408,9 @@
         return;
       }
 
-      // 若有選擇，取第一個選擇的區域當作「基準點 (Origin)」計算距離
       const origin = tempSelectedRegions[0];
       let html = '';
       
-      // 1. 已選擇區塊
       html += `<div style="font-size: 12px; color: #333; margin-bottom: 6px; font-weight: bold; margin-top: 4px;">✅ 已選區域 (依『${origin}』為基準計算距離)</div>`;
       html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
       tempSelectedRegions.forEach(r => {
@@ -412,12 +420,10 @@
       });
       html += '</div>';
 
-      // 2. 距離計算與分類
       let unselected = allRegions.filter(r => !tempSelectedRegions.includes(r));
       let mapped = unselected.map(r => {
         return { name: r, dist: getDistance(origin, r) };
       });
-      // 依距離由近到遠排序
       mapped.sort((a, b) => a.dist - b.dist);
 
       let nearby = mapped.filter(m => m.dist < 15);
@@ -575,11 +581,13 @@
         const scheduledDays = getScheduledDays(item.name);
         const badgeHtml = scheduledDays.length > 0 ? `<div class="scheduled-badge">📍 排入 ${scheduledDays.join(', ')}</div>` : '';
 
+        // 使用 linkify 渲染卡片備註
         html += `
           <div class="pocket-card ${item.type}" onclick="updateMap('${safeQuery}', this)">
             <button class="del-btn" onclick="event.stopPropagation(); deleteFromPocket('${safeName}')">🗑️</button>
             ${badgeHtml}
-            <h4>${item.name}</h4><span class="cat-tag">${item.region} · ${item.category}</span><p>${item.desc}</p>
+            <h4>${item.name}</h4><span class="cat-tag">${item.region} · ${item.category}</span>
+            <p>${linkify(item.desc)}</p>
             <button class="btn-small" style="position:absolute; bottom:12px; right:12px; background:var(--primary); color:white;" onclick="event.stopPropagation(); openBlockSelectModal(${dayIndex}, '${safeName}', '${safeQuery}')">➕ 加入</button>
           </div>`;
       });
@@ -667,7 +675,8 @@
       if (item) {
         document.getElementById('infoTag').innerText = `📍 ${item.region} · ${item.category}`;
         document.getElementById('infoTag').style.display = 'inline-block';
-        document.getElementById('infoDesc').innerText = item.desc || '無備註說明。';
+        // 彈出視窗也支援 linkify 轉換網址
+        document.getElementById('infoDesc').innerHTML = linkify(item.desc) || '無備註說明。';
       } else {
         document.getElementById('infoTag').style.display = 'none';
         document.getElementById('infoDesc').innerText = '此項目可能是手動輸入，或已從口袋名單中刪除。';
