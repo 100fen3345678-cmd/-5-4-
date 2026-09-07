@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V22 </title>
+  <title>Seoul Trip - V23 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -27,7 +27,6 @@
     .map-pane iframe { width: 100%; height: 100%; border: 0; }
     .list-pane { flex: 1; min-height: 80vh; }
     
-    /* V22 新增：全域 Naver 名單按鈕 */
     .naver-list-btn { position: absolute; top: 16px; left: 16px; background: #2DB400; color: white; border: none; padding: 10px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10; display: flex; align-items: center; gap: 6px; transition: transform 0.2s; text-decoration: none; }
     .naver-list-btn:hover { transform: scale(1.05); }
 
@@ -93,13 +92,17 @@
     .pocket-card.food .pocket-drag-handle { border-left-color: #FFA500; }
     .pocket-card.shop .pocket-drag-handle { border-left-color: #4CAF50; }
     
-    .scheduled-badge { position: absolute; top: 12px; right: 40px; background: #3182ce; color: white; font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
+    .scheduled-badge { position: absolute; top: 12px; right: 65px; background: #3182ce; color: white; font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
     
     .pocket-card h4 { margin: 0 24px 4px 0; font-size: 15px; }
     .pocket-card .cat-tag { font-size: 11px; padding: 2px 6px; background: #eee; border-radius: 4px; color: #555; display: inline-block; margin-bottom: 6px; font-weight:bold; }
     .pocket-card p { margin: 0 0 4px 0; font-size: 13px; color: var(--text-muted); white-space: pre-wrap; word-break: break-word; }
+    
+    /* V23 編輯與刪除按鈕樣式 */
     .pocket-card .del-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 14px; cursor: pointer; color: #aaa; padding: 0; z-index: 5; }
     .pocket-card .del-btn:hover { color: var(--primary); }
+    .pocket-card .edit-btn { position: absolute; top: 10px; right: 34px; background: none; border: none; font-size: 14px; cursor: pointer; color: #aaa; padding: 0; z-index: 5; }
+    .pocket-card .edit-btn:hover { color: var(--primary); }
 
     .btn-add-global { display: block; width: 100%; padding: 12px; background: var(--primary-light); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; text-align: center; margin-top: 16px; }
     .btn-add-block { display: block; width: 100%; padding: 12px; background: white; border: 2px dashed #ccc; color: #888; border-radius: 12px; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 24px; }
@@ -139,7 +142,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V22 </p>
+      <p>V23 </p>
     </div>
     <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
   </div>
@@ -147,7 +150,6 @@
 
   <div class="split-layout">
     <div class="map-pane">
-      <!-- V22 新增：直接打開你們的 Naver 收藏清單 -->
       <a href="https://naver.me/Fc6q8ES7" target="_blank" class="naver-list-btn">
         📂 Naver 完整名單
       </a>
@@ -189,9 +191,24 @@
     </div>
   </div>
 
-  <!-- V22 提示修改：告知使用者可以直接貼 Naver 網址 -->
-  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>地圖預設關鍵字 (支援貼上 Naver Map 網址)</label><input type="text" id="bMapQ" placeholder="輸入關鍵字或 https://naver.me/..."></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
-  <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字 (支援貼上 Naver Map 網址)</label><input type="text" id="pMapQ" placeholder="輸入關鍵字或 https://naver.me/..."></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
+  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>地圖預設關鍵字</label><input type="text" id="bMapQ" placeholder="輸入關鍵字或 https://naver.me/..."></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
+  
+  <!-- V23 更新：口袋名單的 Modal，加入 hidden 紀錄編輯來源 -->
+  <div class="modal-overlay" id="pocketModal">
+    <div class="modal">
+      <h3 style="margin-top:0;" id="pModalTitle">✨ 新增名單</h3>
+      <input type="hidden" id="pOriginalName">
+      <div class="form-group"><label>名稱</label><input type="text" id="pName"></div>
+      <div class="form-group"><label>關鍵字 (強力支援貼上 Naver Map 網址)</label><input type="text" id="pMapQ" placeholder="例如: https://naver.me/..."></div>
+      <div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div>
+      <div class="form-group"><label>手動修改地區 (可自填新區)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button>
+        <button class="btn-save" onclick="saveToPocket()" id="pBtnSave">加入名單</button>
+      </div>
+    </div>
+  </div>
+  
   <div class="modal-overlay" id="blockSelectModal"><div class="modal"><h3 style="margin-top:0;">➕ 選擇區間</h3><p style="font-size:13px; color:#666;">將 <strong id="bsItemName" style="color:var(--primary)"></strong> 加入哪裡？</p><input type="hidden" id="bsDayIndex"><input type="hidden" id="bsItemMapQ"><div class="form-group"><select id="bsBlockSelect"></select></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockSelectModal').style.display='none'">取消</button><button class="btn-save" onclick="confirmAddBlock()">確定</button></div></div></div>
   
   <div class="modal-overlay" id="infoModal">
@@ -410,7 +427,6 @@
           }
           subItemsHtml += '</div>';
 
-          // V22: 加入 itemName 給 updateMap 識別備用
           html += `
             <div class="timeline-item" data-ev-index="${evIndex}" onclick="updateMap('${searchQuery}', this, '${safeTitle}')">
               <div class="block-drag-handle">⋮⋮</div>
@@ -457,7 +473,7 @@
               
             </div>
           </div>
-          <button class="btn-add-global" onclick="document.getElementById('pocketModal').style.display='flex'">➕ 新增全域口袋名單</button>
+          <button class="btn-add-global" onclick="openNewPocketModal()">➕ 新增全域口袋名單</button>
         `;
 
         content.innerHTML = html;
@@ -789,12 +805,14 @@
         }
 
         const badgesContainerHtml = (schedBadgeHtml || wantBadgeHtml) 
-          ? `<div style="position:absolute; top:10px; right:35px; display:flex; flex-direction:column; align-items:flex-end; z-index:2; pointer-events:none;">${schedBadgeHtml}${wantBadgeHtml}</div>` 
+          ? `<div style="position:absolute; top:10px; right:65px; display:flex; flex-direction:column; align-items:flex-end; z-index:2; pointer-events:none;">${schedBadgeHtml}${wantBadgeHtml}</div>` 
           : '';
 
+        // V23: 加入編輯按鈕
         cardsHtml += `
           <div class="pocket-card ${item.type}" data-name="${escName}" data-mapquery="${escQuery}" onclick="updateMap('${safeQuery}', this, '${safeName}')">
             <div class="pocket-drag-handle" onclick="event.stopPropagation()">⋮⋮</div>
+            <button class="edit-btn" onclick="event.stopPropagation(); openEditPocketModal('${safeName}')">✏️</button>
             <button class="del-btn" onclick="event.stopPropagation(); deleteFromPocket('${safeName}')">🗑️</button>
             ${badgesContainerHtml}
             <h4>${item.name}</h4><span class="cat-tag">${item.region} · ${item.category}</span>
@@ -807,6 +825,32 @@
       });
       gridEl.innerHTML = cardsHtml;
     }
+
+    // V23: 新增模式
+    window.openNewPocketModal = function() {
+      document.getElementById('pModalTitle').innerText = '✨ 新增名單';
+      document.getElementById('pBtnSave').innerText = '加入名單';
+      document.getElementById('pOriginalName').value = '';
+      document.getElementById('pName').value = '';
+      document.getElementById('pMapQ').value = '';
+      document.getElementById('pDesc').value = '';
+      document.getElementById('pRegion').value = '';
+      document.getElementById('pocketModal').style.display = 'flex';
+    };
+
+    // V23: 編輯模式
+    window.openEditPocketModal = function(name) {
+      const item = pocketDB.find(p => p.name === name);
+      if(!item) return;
+      document.getElementById('pModalTitle').innerText = '✏️ 編輯名單';
+      document.getElementById('pBtnSave').innerText = '儲存修改';
+      document.getElementById('pOriginalName').value = item.name;
+      document.getElementById('pName').value = item.name;
+      document.getElementById('pMapQ').value = item.mapQuery;
+      document.getElementById('pDesc').value = item.desc || '';
+      document.getElementById('pRegion').value = item.region || '';
+      document.getElementById('pocketModal').style.display = 'flex';
+    };
 
     function openBlockSelectModal(dayIndex, name, mapQuery) {
       document.getElementById('bsItemName').innerText = name;
@@ -839,11 +883,14 @@
       if(confirm(`確定徹底刪除 [${name}] 嗎？`)) { pocketDB = pocketDB.filter(item => item.name !== name); syncWithCloud(); renderApp(); }
     }
 
-    function saveToPocket() {
-      const name = document.getElementById('pName').value;
-      const mapQuery = document.getElementById('pMapQ').value || name;
+    // V23: 儲存機制更新，支援連鎖更新行程表內的標籤
+    window.saveToPocket = function() {
+      const oldName = document.getElementById('pOriginalName').value;
+      const name = document.getElementById('pName').value.trim();
+      const mapQuery = document.getElementById('pMapQ').value.trim() || name;
       const desc = document.getElementById('pDesc').value;
       const manualRegion = document.getElementById('pRegion').value.trim();
+      
       if(!name) return alert("請輸入名稱！");
       
       let text = (name + " " + desc).toLowerCase(); let type = 'food'; let category = '日常快充'; 
@@ -860,12 +907,37 @@
       
       if (manualRegion !== '') region = manualRegion;
       
-      pocketDB.push({ type, region, category, name, mapQuery, desc, wantToGo: [] });
+      if (oldName) {
+        // 編輯模式：更新口袋名單
+        const pIndex = pocketDB.findIndex(p => p.name === oldName);
+        if (pIndex !== -1) {
+          pocketDB[pIndex].name = name;
+          pocketDB[pIndex].mapQuery = mapQuery;
+          pocketDB[pIndex].desc = desc;
+          pocketDB[pIndex].region = region;
+          pocketDB[pIndex].type = type;
+          pocketDB[pIndex].category = category;
+        }
+        // 連鎖更新：同步更新已經排進上方行程表(appData)裡的標籤資料
+        appData.forEach(day => {
+          day.events.forEach(ev => {
+            if (ev.subItems) {
+              ev.subItems.forEach(sub => {
+                if (sub.name === oldName) {
+                  sub.name = name;
+                  sub.mapQuery = mapQuery;
+                }
+              });
+            }
+          });
+        });
+      } else {
+        // 新增模式
+        pocketDB.push({ type, region, category, name, mapQuery, desc, wantToGo: [] });
+      }
+      
       syncWithCloud(); 
-      alert(`已將 [${name}] 新增至【${region}】`);
       document.getElementById('pocketModal').style.display = 'none'; 
-      document.getElementById('pName').value = ''; document.getElementById('pMapQ').value = ''; 
-      document.getElementById('pDesc').value = ''; document.getElementById('pRegion').value = '';
       renderApp();
     }
 
@@ -873,10 +945,8 @@
       if(confirm('確定要移除整個時間區間嗎？')) { appData[dayIndex].events.splice(eventIndex, 1); syncWithCloud(); renderApp(); switchTab(dayIndex); }
     }
 
-    // V22: 支援傳入 itemName 以備網址替換之用
     window.updateMap = function(query, cardElement, itemName) {
       let iframeQuery = query;
-      // 如果你貼的是 Naver 網址，Google Iframe 無法搜尋網址，所以自動改用「店名」去讓 Google 顯示地圖
       if (query && query.startsWith('http')) {
         iframeQuery = itemName || "Seoul";
       }
@@ -888,7 +958,6 @@
       if(cardElement) cardElement.classList.add('active-card');
     };
 
-    // V22: 支援 Naver 網址絕對命中直連
     window.viewSubItem = function(name, mapQuery) {
       updateMap(mapQuery, null, name); 
       const item = pocketDB.find(p => p.name === name);
@@ -896,14 +965,12 @@
       
       const searchQuery = mapQuery || name;
       
-      // 處理 Google Maps 連結：如果是網址，改用店名搜尋，否則正常搜尋
       if (searchQuery.startsWith('http')) {
         document.getElementById('infoMapLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
       } else {
         document.getElementById('infoMapLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
       }
       
-      // 處理 Naver Map 連結：如果是網址就「絕對直達」，否則使用翻譯字典搜尋
       const naverTarget = koreanDict[searchQuery] || searchQuery;
       if (naverTarget.startsWith('http')) {
         document.getElementById('infoNaverLink').href = naverTarget;
