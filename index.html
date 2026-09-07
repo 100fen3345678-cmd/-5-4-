@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V16.1 </title>
+  <title>Seoul Trip - V17 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -50,7 +50,6 @@
     .time-col { min-width: 50px; font-weight: 700; color: var(--primary); font-size: 15px; padding-top: 2px; }
     .content-col { flex-grow: 1; padding-right: 120px; }
     .content-col h3 { margin: 0 0 6px 0; font-size: 16px; }
-    /* 這裡加入了 white-space 和 word-break 讓換行生效且長網址不會破版 */
     .content-col p { margin: 0; font-size: 14px; color: var(--text-muted); white-space: pre-wrap; word-break: break-word; }
     
     .sub-items-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; margin-left: 66px; padding-top: 12px; border-top: 1px dashed #eee; min-height: 36px; }
@@ -83,11 +82,8 @@
     .pocket-card.food { border-color: #FFA500; }
     .pocket-card.shop { border-color: #4CAF50; }
     
-    .scheduled-badge { position: absolute; top: 12px; right: 40px; background: #3182ce; color: white; font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
-    
     .pocket-card h4 { margin: 0 24px 4px 0; font-size: 15px; }
     .pocket-card .cat-tag { font-size: 11px; padding: 2px 6px; background: #eee; border-radius: 4px; color: #555; display: inline-block; margin-bottom: 6px; font-weight:bold; }
-    /* 同樣加入換行與斷字支援 */
     .pocket-card p { margin: 0 0 4px 0; font-size: 13px; color: var(--text-muted); white-space: pre-wrap; word-break: break-word; }
     .pocket-card .del-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 14px; cursor: pointer; color: #aaa; padding: 0; z-index: 5; }
     .pocket-card .del-btn:hover { color: var(--primary); }
@@ -128,7 +124,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V16.1 </p>
+      <p>V17 </p>
     </div>
     <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
   </div>
@@ -161,6 +157,18 @@
     </div>
   </div>
 
+  <!-- 許願池 Modal -->
+  <div class="modal-overlay" id="voteModal">
+    <div class="modal">
+      <h3 style="margin-top:0; font-size:18px;">🙋‍♂️ 誰想去 <strong id="vItemName" style="color:var(--primary)"></strong>？</h3>
+      <input type="hidden" id="vItemNameHidden">
+      <div class="region-checkbox-group" id="voteCheckboxes" style="margin-bottom:12px;"></div>
+      <div class="modal-actions">
+        <button class="btn-save" style="width:100%" onclick="closeVoteModal()">完成</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 其他 Modal -->
   <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>地圖預設關鍵字</label><input type="text" id="bMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
   <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字</label><input type="text" id="pMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區，如：水原市)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
@@ -171,12 +179,9 @@
     const JSONBIN_BIN_ID = '6a9da168da38895dfe4076e7'; 
     const JSONBIN_API_KEY = '$2a$10$7PzBRwuMIt9Xl3Xl1b1h/eWFHQUVbxmVKAwrj8A009EU62i2lB6EO';
 
-    // 🔗 智慧網址轉換函數
     window.linkify = function(text) {
       if (!text) return "";
-      // 防止 XSS 並保留原本的文字
       let safeText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      // 偵測網址並轉換為 <a> 標籤，點擊時阻止事件冒泡 (避免觸發卡片拖曳或點擊地圖)
       const urlRegex = /(https?:\/\/[^\s]+)/g;
       return safeText.replace(urlRegex, '<a href="$1" target="_blank" onclick="event.stopPropagation()" style="color: #3182ce; text-decoration: underline; font-weight: bold;">$1</a>');
     };
@@ -293,7 +298,6 @@
           }
           subItemsHtml += '</div>';
 
-          // 使用 linkify 渲染區間備註
           html += `
             <div class="timeline-item" data-ev-index="${evIndex}" onclick="updateMap('${searchQuery}', this)">
               <div class="block-drag-handle">⋮⋮</div>
@@ -373,6 +377,57 @@
         });
       });
     }
+
+    // --- 許願池邏輯 ---
+    window.openVoteModal = function(name) {
+      const item = pocketDB.find(p => p.name === name);
+      if(!item) return;
+      if(!item.wantToGo) item.wantToGo = [];
+      document.getElementById('vItemName').innerText = name;
+      document.getElementById('vItemNameHidden').value = name;
+      renderVoteButtons(item);
+      document.getElementById('voteModal').style.display = 'flex';
+    }
+
+    window.renderVoteButtons = function(item) {
+      const travelers = ["文", "Chris", "CHiLi", "Tony", "Rex", "ShowChen"];
+      const container = document.getElementById('voteCheckboxes');
+      let html = '';
+      travelers.forEach(t => {
+        const isSelected = item.wantToGo && item.wantToGo.includes(t);
+        const style = isSelected 
+          ? 'background: #ecc94b; color: #744210; border: 1px solid #d69e2e; font-weight:bold;' 
+          : 'background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;';
+        html += `<label style="${style}" onclick="toggleVote('${item.name.replace(/'/g, "\\'")}', '${t}')"><span>${t}</span></label>`;
+      });
+      container.innerHTML = html;
+    }
+
+    window.toggleVote = function(itemName, traveler) {
+      const item = pocketDB.find(p => p.name === itemName);
+      if(!item) return;
+      if(!item.wantToGo) item.wantToGo = [];
+      
+      if(item.wantToGo.includes(traveler)) {
+        item.wantToGo = item.wantToGo.filter(t => t !== traveler);
+      } else {
+        item.wantToGo.push(traveler);
+      }
+      renderVoteButtons(item);
+      syncWithCloud(); // 儲存至雲端，但不重新整理畫面以保持操作流暢
+    }
+
+    window.closeVoteModal = function() {
+      document.getElementById('voteModal').style.display = 'none';
+      // 找出當前是哪一天，重新 render 來顯示新的許願標籤
+      let activeIndex = 0;
+      document.querySelectorAll('.tab').forEach((tab, idx) => {
+        if(tab.classList.contains('active')) activeIndex = idx;
+      });
+      renderApp();
+      switchTab(activeIndex);
+    }
+    // ------------------
 
     window.openDayRegionModal = function(dayIndex) {
       document.getElementById('drDayIndex').value = dayIndex;
@@ -578,17 +633,29 @@
       
       displayItems.forEach((item) => {
         const safeName = item.name.replace(/'/g, "\\'"); const safeQuery = item.mapQuery.replace(/'/g, "\\'");
+        
         const scheduledDays = getScheduledDays(item.name);
-        const badgeHtml = scheduledDays.length > 0 ? `<div class="scheduled-badge">📍 排入 ${scheduledDays.join(', ')}</div>` : '';
+        const schedBadgeHtml = scheduledDays.length > 0 ? `<div class="scheduled-badge" style="position:static; margin-bottom:4px;">📍 排入 ${scheduledDays.join(', ')}</div>` : '';
+        
+        let wantBadgeHtml = '';
+        if (item.wantToGo && item.wantToGo.length > 0) {
+          wantBadgeHtml = `<div style="background:#ecc94b; color:#744210; font-size:10px; padding:3px 6px; border-radius:4px; font-weight:bold;">🙋‍♂️ ${item.wantToGo.join(', ')} 想去</div>`;
+        }
 
-        // 使用 linkify 渲染卡片備註
+        const badgesContainerHtml = (schedBadgeHtml || wantBadgeHtml) 
+          ? `<div style="position:absolute; top:10px; right:35px; display:flex; flex-direction:column; align-items:flex-end; z-index:2; pointer-events:none;">${schedBadgeHtml}${wantBadgeHtml}</div>` 
+          : '';
+
         html += `
           <div class="pocket-card ${item.type}" onclick="updateMap('${safeQuery}', this)">
             <button class="del-btn" onclick="event.stopPropagation(); deleteFromPocket('${safeName}')">🗑️</button>
-            ${badgeHtml}
+            ${badgesContainerHtml}
             <h4>${item.name}</h4><span class="cat-tag">${item.region} · ${item.category}</span>
             <p>${linkify(item.desc)}</p>
-            <button class="btn-small" style="position:absolute; bottom:12px; right:12px; background:var(--primary); color:white;" onclick="event.stopPropagation(); openBlockSelectModal(${dayIndex}, '${safeName}', '${safeQuery}')">➕ 加入</button>
+            <div style="position:absolute; bottom:12px; right:12px; display:flex; gap:6px;">
+              <button class="btn-small" style="background:#fef08a; color:#854d0e; border:1px solid #fde047;" onclick="event.stopPropagation(); openVoteModal('${safeName}')">🙋‍♂️ 想去</button>
+              <button class="btn-small" style="background:var(--primary); color:white;" onclick="event.stopPropagation(); openBlockSelectModal(${dayIndex}, '${safeName}', '${safeQuery}')">➕ 加入</button>
+            </div>
           </div>`;
       });
       html += `</div>`; grid.innerHTML = html;
@@ -646,7 +713,7 @@
       
       if (manualRegion !== '') region = manualRegion;
       
-      pocketDB.push({ type, region, category, name, mapQuery, desc });
+      pocketDB.push({ type, region, category, name, mapQuery, desc, wantToGo: [] });
       syncWithCloud(); 
       alert(`已將 [${name}] 新增至【${region}】`);
       document.getElementById('pocketModal').style.display = 'none'; 
@@ -675,7 +742,6 @@
       if (item) {
         document.getElementById('infoTag').innerText = `📍 ${item.region} · ${item.category}`;
         document.getElementById('infoTag').style.display = 'inline-block';
-        // 彈出視窗也支援 linkify 轉換網址
         document.getElementById('infoDesc').innerHTML = linkify(item.desc) || '無備註說明。';
       } else {
         document.getElementById('infoTag').style.display = 'none';
