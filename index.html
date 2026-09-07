@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V14.1 原子化沙盒版 (自動升級資料)</title>
+  <title>Seoul Trip - V15 主副標與全域篩選版</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -30,8 +30,12 @@
     .day-content { display: none; animation: fadeIn 0.3s ease; }
     .day-content.active { display: block; }
     
-    .day-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .btn-setting { background: #e2e8f0; color: #4a5568; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; }
+    .day-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 12px; }
+    .day-titles { display: flex; flex-direction: column; gap: 4px; }
+    .day-titles h2 { margin: 0; font-size: 20px; color: var(--primary); line-height: 1.2; }
+    .day-titles .subtitle { margin: 0; font-size: 14px; color: var(--text-muted); font-weight: 500; }
+    
+    .btn-setting { background: #e2e8f0; color: #4a5568; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; flex-shrink: 0; height: 32px; }
     .btn-setting:hover { background: #cbd5e0; }
 
     .timeline-list { min-height: 50px; }
@@ -122,7 +126,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V14.1 原子化沙盒版</p>
+      <p>V15 全域口袋與動態標題版</p>
     </div>
     <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
   </div>
@@ -140,9 +144,12 @@
     <div class="modal">
       <h3 style="margin-top:0;">⚙️ 設定當日目標區域</h3>
       <input type="hidden" id="drDayIndex">
-      <div class="form-group"><label>每日主標題</label><input type="text" id="drTitle"></div>
       <div class="form-group">
-        <label>勾選包含區域 (影響下方的口袋名單)</label>
+        <label>當日副標題 (選填)</label>
+        <input type="text" id="drSubtitle" placeholder="例如：逛街與烤肉之夜">
+      </div>
+      <div class="form-group">
+        <label>勾選包含區域 (這將自動成為主標題，並過濾下方名單)</label>
         <div class="region-checkbox-group" id="drCheckboxes"></div>
       </div>
       <div class="modal-actions">
@@ -152,7 +159,8 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>標題</label><input type="text" id="bTitle"></div><div class="form-group"><label>預設關鍵字</label><input type="text" id="bMapQ"></div><div class="form-group"><label>備註</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
+  <!-- 其他 Modal -->
+  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>地圖預設關鍵字</label><input type="text" id="bMapQ"></div><div class="form-group"><label>備註</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
   <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字</label><input type="text" id="pMapQ"></div><div class="form-group"><label>備註 (自動分類用)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區，如：水原市)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
   <div class="modal-overlay" id="blockSelectModal"><div class="modal"><h3 style="margin-top:0;">➕ 選擇區間</h3><p style="font-size:13px; color:#666;">將 <strong id="bsItemName" style="color:var(--primary)"></strong> 加入哪裡？</p><input type="hidden" id="bsDayIndex"><input type="hidden" id="bsItemMapQ"><div class="form-group"><select id="bsBlockSelect"></select></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockSelectModal').style.display='none'">取消</button><button class="btn-save" onclick="confirmAddBlock()">確定</button></div></div></div>
   <div class="modal-overlay" id="infoModal"><div class="modal"><h3 style="margin-top:0; font-size:18px;" id="infoName"></h3><span id="infoTag" style="display:inline-block; font-size:12px; padding:4px 8px; background:#eee; border-radius:6px; color:#555; margin-bottom:12px; font-weight:bold;"></span><p id="infoDesc" style="font-size:14px; color:#666; line-height:1.6; margin-top:0;"></p><div class="modal-actions"><button class="btn-save" style="width:100%;" onclick="document.getElementById('infoModal').style.display='none'">關閉</button></div></div></div>
@@ -161,58 +169,140 @@
     const JSONBIN_BIN_ID = '6a9da168da38895dfe4076e7'; 
     const JSONBIN_API_KEY = '$2a$10$7PzBRwuMIt9Xl3Xl1b1h/eWFHQUVbxmVKAwrj8A009EU62i2lB6EO';
 
-    // 完全原子化的乾淨資料
+    // 完整 80+ 筆資料，全面原子化
     const initialPocketDB = [
       { type: "shop", region: "延南", category: "服飾潮牌", name: "플리즈노팔로우 연남", mapQuery: "Please No Follow Yeonnam", desc: "女士服裝店" },
-      { type: "food", region: "延南", category: "續攤回血", name: "Slow Brew Pub Yeonnam", mapQuery: "Slow Brew Pub Yeonnam", desc: "酒廠酒吧小酌" },
       { type: "shop", region: "弘大", category: "服飾潮牌", name: "무센트 홍대 쇼룸", mapQuery: "MUCENT Hongdae Showroom", desc: "MUCENT 弘大展示間" },
       { type: "shop", region: "弘大", category: "服飾潮牌", name: "Musinsa Standard (弘大)", mapQuery: "Musinsa Standard Hongdae", desc: "快時尚" },
+      { type: "shop", region: "弘大", category: "服飾潮牌", name: "Chaakan Shoes", mapQuery: "Chaakan Shoes Hongdae", desc: "平價女鞋" },
       { type: "shop", region: "弘大", category: "美妝保養", name: "DayBeau医院", mapQuery: "DayBeau Clinic Hongdae", desc: "皮膚科保養" },
+      { type: "shop", region: "弘大", category: "綜合百貨", name: "T1 Base Camp", mapQuery: "T1 Base Camp Hongdae", desc: "電競迷朝聖" },
       { type: "food", region: "弘大", category: "聚餐大菜", name: "烏達裏家醬蟹 弘大店", mapQuery: "오다리집 간장게장 홍대점", desc: "人氣醬蟹" },
       { type: "food", region: "弘大", category: "聚餐大菜", name: "豬肉商會", mapQuery: "돼지상회 홍대", desc: "平價烤肉吃到飽" },
+      { type: "food", region: "弘大", category: "聚餐大菜", name: "麻浦牛小腸城", mapQuery: "마포곱창타운", desc: "牛小腸專門" },
+      { type: "food", region: "弘大", category: "日常快充", name: "香港飯店0410 (弘大)", mapQuery: "홍콩반점0410 홍대입구역점", desc: "白種元炸醬麵" },
+      { type: "food", region: "望遠", category: "日常快充", name: "望遠市場", mapQuery: "Mangwon Market", desc: "在地傳統美食快充" },
+      { type: "food", region: "延南", category: "續攤回血", name: "Slow Brew Pub Yeonnam", mapQuery: "Slow Brew Pub Yeonnam", desc: "酒廠酒吧小酌" },
+
       { type: "shop", region: "聖水", category: "服飾潮牌", name: "ADER ERROR SEONGSU", mapQuery: "ADER ERROR SEONGSU", desc: "潮牌空間" },
+      { type: "shop", region: "聖水", category: "服飾潮牌", name: "BLUE ELEPHANT SEONGSU", mapQuery: "BLUE ELEPHANT SEONGSU", desc: "太陽眼鏡" },
       { type: "shop", region: "聖水", category: "服飾潮牌", name: "MUSINSA EMPTY", mapQuery: "MUSINSA EMPTY SEONGSU", desc: "高階設計師選品" },
+      { type: "shop", region: "聖水", category: "服飾潮牌", name: "퓨어다 성수 (Pureda)", mapQuery: "퓨어다 성수", desc: "人氣女裝" },
+      { type: "shop", region: "聖水", category: "服飾潮牌", name: "무센트 성수 쇼룸", mapQuery: "MUCENT Seongsu Showroom", desc: "MUCENT 聖水展示間" },
+      { type: "shop", region: "聖水", category: "服飾潮牌", name: "BADBLOOD Seongsu", mapQuery: "BADBLOOD Seongsu Flagship Store", desc: "歐美運動風" },
+      { type: "shop", region: "聖水", category: "服飾潮牌", name: "ILKW Seoul Showroom", mapQuery: "ILKW Seoul", desc: "特色服飾展示" },
+      { type: "shop", region: "聖水", category: "服飾潮牌", name: "KHIHO SEONGSU STORE", mapQuery: "KHIHO SEONGSU", desc: "質感服飾店" },
+      { type: "shop", region: "聖水", category: "服飾潮牌", name: "MARGESHERWOOD Seoul", mapQuery: "MARGESHERWOOD Seoul Flagship Store", desc: "人氣包包" },
+      { type: "shop", region: "聖水", category: "服飾潮牌", name: "Subdued", mapQuery: "Subdued Seoul", desc: "歐美少女服飾" },
+      { type: "shop", region: "聖水", category: "服飾潮牌", name: "aeae", mapQuery: "aeae Seongsu", desc: "帽子單品" },
+      { type: "shop", region: "聖水", category: "服飾潮牌", name: "Brandy Melville Korea", mapQuery: "Brandy Melville Seongsu", desc: "美式復古少女裝" },
+      { type: "shop", region: "聖水", category: "綜合百貨", name: "Cube Entertainment", mapQuery: "Cube Entertainment Seongsu", desc: "星光朝聖" },
+      { type: "shop", region: "聖水", category: "綜合百貨", name: "29cm.home", mapQuery: "29cm Seongsu", desc: "質感生活選物" },
+      { type: "shop", region: "聖水", category: "綜合百貨", name: "首爾林公園", mapQuery: "Seoul Forest", desc: "大型綠地" },
+      { type: "food", region: "聖水", category: "聚餐大菜", name: "Neungdong Minari", mapQuery: "능동미나리 성수", desc: "水芹菜湯飯" },
       { type: "food", region: "聖水", category: "聚餐大菜", name: "Ggupdang Seongsu", mapQuery: "꿉당 성수", desc: "米其林推薦烤肉" },
+      { type: "food", region: "聖水", category: "日常快充", name: "無垢屋 聖水店", mapQuery: "무고옥 성수", desc: "特色雞肉料理" },
+      { type: "food", region: "聖水", category: "續攤回血", name: "Rafre Fruit", mapQuery: "라프레플루트 성수", desc: "鮮果咖啡廳" },
+      { type: "food", region: "聖水", category: "續攤回血", name: "韓貞仙", mapQuery: "한정선 성수", desc: "爆紅水果大福" },
       { type: "food", region: "聖水", category: "續攤回血", name: "Cafe Onion 聖水店", mapQuery: "Cafe Onion Seongsu", desc: "廢墟工業風" },
+
       { type: "shop", region: "島山", category: "服飾潮牌", name: "HAUS NOWHERE SEOUL", mapQuery: "HAUS DOSAN", desc: "Gentle Monster 旗艦" },
       { type: "shop", region: "島山", category: "服飾潮牌", name: "Stüssy 서울", mapQuery: "Stussy Seoul Dosan", desc: "街頭潮牌指標" },
+      { type: "shop", region: "漢南", category: "服飾潮牌", name: "무센트 한남 플래그십", mapQuery: "MUCENT Hannam Flagship", desc: "MUCENT 漢南旗艦" },
       { type: "shop", region: "漢南", category: "服飾潮牌", name: "Rest & Recreation", mapQuery: "Rest & Recreation Hannam", desc: "明星同款休閒" },
+      { type: "shop", region: "漢南", category: "服飾潮牌", name: "The Barnnet", mapQuery: "The Barnnet Hannam", desc: "法式復古女裝" },
+      { type: "shop", region: "漢南", category: "服飾潮牌", name: "GROVE", mapQuery: "GROVE Hannam", desc: "學院風復古女裝" },
+      { type: "shop", region: "漢南", category: "服飾潮牌", name: "Atelier Nain", mapQuery: "Atelier Nain Hannam", desc: "氣質優雅女裝" },
+      { type: "shop", region: "漢南", category: "服飾潮牌", name: "ROLAROLA", mapQuery: "ROLAROLA Hannam", desc: "甜美可愛風服飾" },
+      { type: "shop", region: "漢南", category: "服飾潮牌", name: "ason", mapQuery: "ason Hannam", desc: "設計師品牌" },
       { type: "shop", region: "漢南", category: "服飾潮牌", name: "MARGESHERWOOD Hannam", mapQuery: "MARGESHERWOOD Hannam", desc: "Y2K復古包款" },
-      { type: "shop", region: "東大門", category: "綜合百貨", name: "nyunyu house", mapQuery: "nyunyu Dongdaemun", desc: "飾品包包批發" },
-      { type: "food", region: "東大門", category: "聚餐大菜", name: "陳玉華奶奶元祖一隻雞", mapQuery: "진옥화할매원조닭한마리", desc: "必吃一隻雞" },
+      { type: "shop", region: "漢南", category: "服飾潮牌", name: "Mango Many Please", mapQuery: "Mango Many Please Hannam", desc: "簡約日常女裝" },
+      { type: "shop", region: "漢南", category: "服飾潮牌", name: "Glowny 漢南洞", mapQuery: "Glowny Hannam", desc: "溫柔感女裝" },
+      { type: "shop", region: "漢南", category: "服飾潮牌", name: "Haus Aver", mapQuery: "Haus Aver", desc: "設計師時裝店" },
+      { type: "shop", region: "島山", category: "服飾潮牌", name: "Sinoon Flagship Dosan", mapQuery: "Sinoon Dosan", desc: "法式浪漫女裝" },
+      { type: "shop", region: "漢南", category: "服飾潮牌", name: "Beaker", mapQuery: "Beaker Hannam", desc: "知名高階選品店" },
+      { type: "shop", region: "江南", category: "綜合百貨", name: "Gen.G esports", mapQuery: "Gen.G Seoul", desc: "電競戰隊總部" },
+      { type: "shop", region: "江南", category: "綜合百貨", name: "T1 HQ", mapQuery: "T1 Seoul HQ", desc: "T1戰隊大樓" },
+      { type: "shop", region: "龍山", category: "綜合百貨", name: "Hybe Headquarters", mapQuery: "HYBE INSIGHT", desc: "BTS經紀公司朝聖" },
+      { type: "food", region: "漢南", category: "聚餐大菜", name: "Jeju Rooftop Black BBQ", mapQuery: "Jeju Rooftop Black BBQ Seoul", desc: "黑豬肉烤肉" },
+      { type: "food", region: "島山", category: "續攤回血", name: "NUDAKE Haus Dosan", mapQuery: "NUDAKE Haus Dosan", desc: "藝術感暗黑系甜點" },
+
+      { type: "shop", region: "東大門", category: "綜合百貨", name: "nyunyu house", mapQuery: "nyunyu Dongdaemun", desc: "東大門飾品包包批發" },
       { type: "shop", region: "鐘路", category: "綜合百貨", name: "景福宮", mapQuery: "Gyeongbokgung Palace", desc: "首爾最大宮殿" },
-      { type: "food", region: "鐘路", category: "聚餐大菜", name: "山淸炭火花園", mapQuery: "산청숯불가든 을지로", desc: "超火炭火烤肉" },
+      { type: "shop", region: "鐘路", category: "綜合百貨", name: "北村韓屋村", mapQuery: "Bukchon Hanok Village", desc: "傳統韓屋聚落" },
+      { type: "shop", region: "鐘路", category: "綜合百貨", name: "清溪川", mapQuery: "Cheonggyecheon", desc: "市中心水岸步道" },
+      { type: "food", region: "東大門", category: "聚餐大菜", name: "陳玉華奶奶元祖一隻雞", mapQuery: "진옥화할매원조닭한마리", desc: "東大門必吃一隻雞" },
+      { type: "food", region: "東大門", category: "聚餐大菜", name: "最好吃豬腳 東大門店", mapQuery: "가장맛있는족발 동대문", desc: "韓式宵夜豬腳" },
+      { type: "food", region: "乙支路", category: "聚餐大菜", name: "林間烤肉乙支路分店", mapQuery: "을지로 고기집", desc: "乙支路周邊烤肉" },
+      { type: "food", region: "乙支路", category: "聚餐大菜", name: "山淸炭火花園", mapQuery: "산청숯불가든 을지로", desc: "超火炭火烤肉(需抽號碼)" },
+      { type: "food", region: "鐘路", category: "聚餐大菜", name: "鷄林食堂", mapQuery: "계림식당 본점", desc: "鐘路蒜味辣雞湯" },
+      { type: "food", region: "鐘路", category: "聚餐大菜", name: "Jungdamun Bukchon", mapQuery: "정다운 북촌", desc: "北村韓食餐廳" },
+      { type: "food", region: "鐘路", category: "日常快充", name: "廣藏市場", mapQuery: "Gwangjang Market", desc: "綠豆煎餅、生拌牛肉" },
+      { type: "food", region: "乙支路", category: "日常快充", name: "乙支餃子", mapQuery: "을지만두", desc: "乙支路餃子快充" },
+      { type: "food", region: "鐘路", category: "日常快充", name: "無垢屋 (安國店)", mapQuery: "무고옥 안국", desc: "北村周邊雞肉料理" },
+      { type: "food", region: "鐘路", category: "續攤回血", name: "Artist Bakery", mapQuery: "Artist Bakery Anguk", desc: "安國站鹽可頌名店" },
+      { type: "food", region: "益善洞", category: "續攤回血", name: "Cafe Highwaist Ikseon", mapQuery: "Cafe Highwaist Ikseon", desc: "益善洞歐風甜點" },
+      { type: "food", region: "益善洞", category: "續攤回血", name: "Ouvrir", mapQuery: "Ouvrir Seoul", desc: "益善洞咖啡空間" },
+      { type: "food", region: "鐘路", category: "續攤回血", name: "Cafe Layered Bukchon", mapQuery: "Cafe Layered Bukchon", desc: "北村司康專賣店" },
+
       { type: "shop", region: "明洞", category: "綜合百貨", name: "新世界免稅店", mapQuery: "Shinsegae Duty Free Myeongdong", desc: "市區免稅採購" },
-      { type: "food", region: "明洞", category: "聚餐大菜", name: "烏達里家 醬蟹", mapQuery: "오다리집 명동", desc: "明洞醬蟹" },
-      { type: "shop", region: "汝矣島", category: "綜合百貨", name: "汝矣島漢江公園", mapQuery: "Yeouido Hangang Park", desc: "漢江野餐散步" }
+      { type: "shop", region: "明洞", category: "綜合百貨", name: "nyunyu myeongdong", mapQuery: "nyunyu Myeongdong", desc: "明洞飾品百貨" },
+      { type: "shop", region: "汝矣島", category: "綜合百貨", name: "汝矣島漢江公園", mapQuery: "Yeouido Hangang Park", desc: "漢江野餐散步" },
+      { type: "shop", region: "龍山", category: "綜合百貨", name: "首爾塔", mapQuery: "N Seoul Tower", desc: "南山夜景地標" },
+      { type: "shop", region: "明洞", category: "服飾潮牌", name: "Matin Kim明洞店", mapQuery: "Matin Kim Myeongdong", desc: "樂天百貨專櫃" },
+      { type: "shop", region: "明洞", category: "服飾潮牌", name: "Musinsa Standard (明洞)", mapQuery: "Musinsa Standard Myeongdong", desc: "明洞快時尚" },
+      { type: "shop", region: "明洞", category: "服飾潮牌", name: "RALPH LAUREN CHILDREN", mapQuery: "Ralph Lauren Seoul", desc: "童裝專櫃" },
+      { type: "food", region: "明洞", category: "聚餐大菜", name: "烏達里家 醬蟹", mapQuery: "오다리집 명동", desc: "明洞醬蟹名店" },
+      { type: "food", region: "明洞", category: "日常快充", name: "香港飯店0410 (明洞)", mapQuery: "홍콩반점0410 명동점", desc: "明洞逛街快充" },
+
+      { type: "food", region: "松坡", category: "聚餐大菜", name: "평화연남 방이점", mapQuery: "평화연남 방이점", desc: "熱門餐館 (防荑洞)" },
+      { type: "food", region: "其他", category: "續攤回血", name: "Stereophonic Sound", mapQuery: "Stereophonic Sound Seoul", desc: "外帶咖啡專賣店" },
+      { type: "food", region: "其他", category: "續攤回血", name: "뚜흐느솔 (Tournesol)", mapQuery: "뚜흐느솔", desc: "咖啡甜點" },
+      { type: "food", region: "龍山", category: "續攤回血", name: "마타사 효창 (Matasa)", mapQuery: "마타사 효창", desc: "孝昌公園周邊" }
     ];
 
+    // 完整的 5 天行程資料 (副標與區域分離)
     const initialItinerary = [
-      { id: "day1", label: "10/14 (三)", title: "弘大 / 延南洞", regions: ["弘大", "延南"], events: [
-          { time: "11:15", title: "航班抵達仁川", desc: "準備入境。", mapQuery: "Incheon International Airport", subItems: [] },
-          { time: "14:00", title: "延南洞午茶區間", desc: "找間咖啡廳休息。", mapQuery: "Yeonnam-dong Seoul", subItems: [] },
-          { time: "18:30", title: "晚餐時段", desc: "弘大周邊晚餐。", mapQuery: "Hongdae Seoul", subItems: [{name: "烏達裏家醬蟹 弘大店", mapQuery: "오다리집 간장게장 홍대점"}] }
+      { id: "day1", label: "10/14 (三)", subtitle: "抵達與初探", regions: ["弘大", "延南"], events: [
+          { time: "11:15", title: "航班抵達仁川", desc: "4人搭乘 CI160 抵達，準備入境。", mapQuery: "Incheon International Airport", subItems: [] },
+          { time: "13:30", title: "弘大站寄放行李", desc: "使用站內置物櫃或 RAON。", mapQuery: "Hongik University Station", subItems: [] },
+          { time: "14:00", title: "延南洞午茶區間", desc: "找間咖啡廳休息吃甜點。", mapQuery: "Yeonnam-dong Seoul", subItems: [] },
+          { time: "17:00", title: "Airbnb 入住", desc: "領行李並與下午抵達的朋友會合。", mapQuery: "Hongdae Seoul", subItems: [] },
+          { time: "18:30", title: "晚餐時段", desc: "弘大周邊晚餐。", mapQuery: "Hongdae Seoul", subItems: [{name: "烏達裏家醬蟹 弘大店", mapQuery: "오다리집 간장게장 홍대점"}] },
+          { time: "20:30", title: "夜生活區間", desc: "延南洞小酌。", mapQuery: "Yeonnam-dong Seoul", subItems: [{name: "Slow Brew Pub Yeonnam", mapQuery: "Slow Brew Pub Yeonnam"}] }
         ]
       },
-      { id: "day2", label: "10/15 (四)", title: "島山 / 漢南洞", regions: ["島山", "漢南"], events: [
+      { id: "day2", label: "10/15 (四)", subtitle: "逛街與夜景", regions: ["島山", "漢南", "龍山"], events: [
           { time: "10:00", title: "島山商圈逛街", desc: "島山公園周邊自由逛街。", mapQuery: "Haus Dosan", subItems: [{name: "HAUS NOWHERE SEOUL", mapQuery: "HAUS DOSAN"}, {name: "Stüssy 서울", mapQuery: "Stussy Seoul Dosan"}] },
-          { time: "14:00", title: "漢南洞血拼區間", desc: "漢南洞商圈自由探索。", mapQuery: "Hannam-dong Seoul", subItems: [{name: "MARGESHERWOOD Hannam", mapQuery: "MARGESHERWOOD Hannam"}] }
+          { time: "12:30", title: "午餐時段", desc: "島山周邊或移動至漢南洞用餐。", mapQuery: "Hannam-dong Seoul", subItems: [] },
+          { time: "14:00", title: "漢南洞血拼區間", desc: "漢南洞商圈自由探索。", mapQuery: "Hannam-dong Seoul", subItems: [{name: "MARGESHERWOOD Hannam", mapQuery: "MARGESHERWOOD Hannam"}] },
+          { time: "18:30", title: "晚餐時段", desc: "漢南洞周邊晚餐。", mapQuery: "Hannam-dong Seoul", subItems: [{name: "Jeju Rooftop Black BBQ", mapQuery: "Jeju Rooftop Black BBQ Seoul"}] },
+          { time: "20:30", title: "首爾塔夜景", desc: "上山欣賞首爾市區夜景。", mapQuery: "N Seoul Tower", subItems: [] }
         ]
       },
-      { id: "day3", label: "10/16 (五)", title: "聖水洞", regions: ["聖水"], events: [
+      { id: "day3", label: "10/16 (五)", subtitle: "文青與潮流", regions: ["聖水"], events: [
+          { time: "11:00", title: "首爾林周邊", desc: "首爾林散步，周邊吃早午餐。", mapQuery: "Seoul Forest", subItems: [] },
+          { time: "13:30", title: "午茶時段", desc: "吃個點心。", mapQuery: "Seongsu-dong Seoul", subItems: [{name: "韓貞仙", mapQuery: "한정선 성수"}] },
           { time: "14:00", title: "聖水洞主街血拼", desc: "聖水洞商圈自由探索區間。", mapQuery: "Seongsu-dong Seoul", subItems: [{name: "ADER ERROR SEONGSU", mapQuery: "ADER ERROR SEONGSU"}, {name: "MUSINSA EMPTY", mapQuery: "MUSINSA EMPTY SEONGSU"}] },
-          { time: "18:30", title: "晚餐時段", desc: "聖水洞人氣烤肉。", mapQuery: "Seongsu-dong Seoul", subItems: [{name: "Ggupdang Seongsu", mapQuery: "꿉당 성수"}] }
+          { time: "18:30", title: "晚餐時段", desc: "聖水洞人氣烤肉。", mapQuery: "Seongsu-dong Seoul", subItems: [{name: "Ggupdang Seongsu", mapQuery: "꿉당 성수"}] },
+          { time: "20:30", title: "夜間散步", desc: "感受聖水洞夜間氛圍。", mapQuery: "Seongsu-dong Seoul", subItems: [] }
         ]
       },
-      { id: "day4", label: "10/17 (六)", title: "鐘路 / 明洞 / 東大門", regions: ["鐘路", "明洞", "東大門"], events: [
+      { id: "day4", label: "10/17 (六)", subtitle: "古城與免稅", regions: ["鐘路", "明洞", "東大門", "乙支路"], events: [
           { time: "09:30", title: "景福宮 & 北村", desc: "傳統韓屋與宮殿美學。", mapQuery: "Gyeongbokgung Palace", subItems: [] },
-          { time: "13:30", title: "明洞商圈採買", desc: "免稅店與快時尚。", mapQuery: "Myeongdong Seoul", subItems: [{name: "新世界免稅店", mapQuery: "Shinsegae Duty Free Myeongdong"}] },
-          { time: "21:00", title: "東大門批發", desc: "東大門夜間採買。", mapQuery: "Dongdaemun Seoul", subItems: [{name: "nyunyu house", mapQuery: "nyunyu Dongdaemun"}] }
+          { time: "12:00", title: "午餐時段", desc: "安國站周邊用餐。", mapQuery: "Anguk Station", subItems: [{name: "無垢屋 (安國店)", mapQuery: "무고옥 안국"}] },
+          { time: "13:30", title: "明洞商圈採買", desc: "免稅店與快時尚。", mapQuery: "Myeongdong Seoul", subItems: [{name: "新世界免稅店", mapQuery: "Shinsegae Duty Free Myeongdong"}, {name: "Matin Kim明洞店", mapQuery: "Matin Kim Myeongdong"}] },
+          { time: "16:30", title: "山青烤肉抽號", desc: "派人至機台抽號碼牌！", mapQuery: "산청숯불가든 을지로", subItems: [] },
+          { time: "17:00", title: "乙支路 / 益善洞", desc: "找間咖啡廳等候叫號。", mapQuery: "Euljiro 3-ga Station", subItems: [] },
+          { time: "18:30", title: "晚餐時段", desc: "依照號碼牌進度入座。", mapQuery: "산청숯불가든 을지로", subItems: [{name: "山淸炭火花園", mapQuery: "산청숯불가든 을지로"}] },
+          { time: "21:00", title: "東大門批發", desc: "東大門夜間採買區間。", mapQuery: "Dongdaemun Seoul", subItems: [{name: "nyunyu house", mapQuery: "nyunyu Dongdaemun"}] }
         ]
       },
-      { id: "day5", label: "10/18 (日)", title: "汝矣島 / 弘大", regions: ["汝矣島", "弘大"], events: [
+      { id: "day5", label: "10/18 (日)", subtitle: "最後補給", regions: ["汝矣島", "弘大"], events: [
           { time: "09:30", title: "汝矣島漢江公園", desc: "早晨散步放鬆。", mapQuery: "Yeouido Hangang Park", subItems: [] },
-          { time: "14:00", title: "弘大最後補齊", desc: "最後購物與皮膚科保養。", mapQuery: "Hongdae Seoul", subItems: [{name: "DayBeau医院", mapQuery: "DayBeau Clinic Hongdae"}] }
+          { time: "12:30", title: "午餐時段", desc: "弘大入口驛周邊用餐。", mapQuery: "Hongik University Station", subItems: [{name: "香港飯店0410 (弘大)", mapQuery: "홍콩반점0410 홍대입구역점"}] },
+          { time: "14:00", title: "弘大最後補齊", desc: "最後購物與皮膚科保養。", mapQuery: "Hongdae Seoul", subItems: [{name: "DayBeau医院", mapQuery: "DayBeau Clinic Hongdae"}, {name: "Musinsa Standard (弘大)", mapQuery: "Musinsa Standard Hongdae"}] },
+          { time: "17:00", title: "前往機場", desc: "拿行李搭 AREX。20:35 與 22:00 航班的朋友陸續前往。", mapQuery: "Incheon International Airport", subItems: [] }
         ]
       }
     ];
@@ -249,16 +339,14 @@
         const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, { headers: { 'X-Master-Key': JSONBIN_API_KEY } });
         const data = await res.json();
         if (data && data.record) {
-          
-          // 【資料升級機制】檢查雲端上是否為含有斜線 "/" 的舊版 V13 資料
-          const isOldFormat = data.record.pocketDB && data.record.pocketDB.some(p => p.region && p.region.includes('/'));
-          const isEmpty = !data.record.appData || data.record.appData.length === 0;
+          // 【強制升級機制】如果發現雲端資料少於 50 筆(被之前的閹割版洗掉)，或是沒有 subtitle 屬性，就強制升級成 V15 完整資料
+          const needsUpgrade = !data.record.pocketDB || data.record.pocketDB.length < 50 || !data.record.appData[0].hasOwnProperty('subtitle');
 
-          if (isEmpty || isOldFormat) {
-            console.log("偵測到舊版或空資料，自動覆寫為 V14 原子化新資料...");
+          if (needsUpgrade) {
+            console.log("偵測到閹割版或舊結構，強制覆寫為 V15 完整資料...");
             appData = initialItinerary; 
             pocketDB = initialPocketDB; 
-            syncWithCloud(); // 強制上傳新資料
+            syncWithCloud();
           } else {
             appData = data.record.appData; 
             pocketDB = data.record.pocketDB;
@@ -297,9 +385,16 @@
         content.className = `day-content ${dayIndex === 0 ? 'active' : ''}`;
         content.id = `content-${dayIndex}`;
         
+        // 主副標題渲染
+        const mainTitle = day.regions && day.regions.length > 0 ? day.regions.join(' / ') : '未設定區域';
+        const subTitleHtml = day.subtitle ? `<p class="subtitle">${day.subtitle}</p>` : '';
+        
         let html = `
           <div class="day-header-row">
-            <h2 style="margin:0; font-size:18px;">${day.title}</h2>
+            <div class="day-titles">
+              <h2>${mainTitle}</h2>
+              ${subTitleHtml}
+            </div>
             <button class="btn-setting" onclick="openDayRegionModal(${dayIndex})">⚙️ 設定區域</button>
           </div>
         `;
@@ -339,16 +434,17 @@
         });
         html += `</div>`;
 
-        // 動態生成選單，完美支援單一標籤
-        let regionOptions = `<option value="All">全部 (${day.regions.length > 0 ? day.regions.join('+') : '未設定'})</option>`;
+        let regionOptions = `<option value="All">包含的區域 (${day.regions.length > 0 ? day.regions.join('+') : '未設定'})</option>`;
         day.regions.forEach(r => {
           regionOptions += `<option value="${r}" ${currentPocketRegion[dayIndex] === r ? 'selected' : ''}>只看 ${r}</option>`;
         });
+        // 增加全域選項
+        regionOptions += `<option value="All_Global" ${currentPocketRegion[dayIndex] === 'All_Global' ? 'selected' : ''}>🌍 全部 (所有店家)</option>`;
 
         html += `
           <button class="btn-add-block" onclick="openBlockModal(${dayIndex})">➕ 新增空白區間</button>
           <div class="pocket-section">
-            <button class="pocket-toggle" onclick="togglePocket(${dayIndex})">💡 展開專屬口袋名單 ▾</button>
+            <button class="pocket-toggle" onclick="togglePocket(${dayIndex})">💡 展開口袋名單 ▾</button>
             <div class="pocket-content" id="pocket-content-${dayIndex}">
               <div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0;">
                 <span style="font-size:13px; font-weight:bold; color:#555;">📍 篩選：</span>
@@ -402,7 +498,7 @@
 
     window.openDayRegionModal = function(dayIndex) {
       document.getElementById('drDayIndex').value = dayIndex;
-      document.getElementById('drTitle').value = appData[dayIndex].title;
+      document.getElementById('drSubtitle').value = appData[dayIndex].subtitle || '';
       
       const allRegions = getAllAvailableRegions();
       const currentRegions = appData[dayIndex].regions || [];
@@ -423,12 +519,16 @@
 
     window.saveDayRegions = function() {
       const dayIndex = document.getElementById('drDayIndex').value;
-      appData[dayIndex].title = document.getElementById('drTitle').value;
+      appData[dayIndex].subtitle = document.getElementById('drSubtitle').value;
       
       const checkedBoxes = document.querySelectorAll('#drCheckboxes input[type="checkbox"]:checked');
       const newRegions = Array.from(checkedBoxes).map(cb => cb.value);
       appData[dayIndex].regions = newRegions;
-      currentPocketRegion[dayIndex] = 'All'; 
+      
+      // 如果原本選了 All_Global 就不跳回 All，保持使用體驗連貫
+      if(currentPocketRegion[dayIndex] !== 'All_Global') {
+        currentPocketRegion[dayIndex] = 'All'; 
+      }
       
       syncWithCloud();
       document.getElementById('dayRegionModal').style.display = 'none';
@@ -495,9 +595,14 @@
       const dayRegions = appData[dayIndex].regions || [];
       
       let baseFiltered = pocketDB.filter(item => item.type === type);
-      if (selectedFilter === 'All') {
+      
+      if (selectedFilter === 'All_Global') {
+        // 全域顯示：不作任何地區過濾
+      } else if (selectedFilter === 'All') {
+        // 只顯示當天有勾選的區域
         baseFiltered = baseFiltered.filter(item => dayRegions.includes(item.region));
       } else {
+        // 只顯示選單特定的單一區域
         baseFiltered = baseFiltered.filter(item => item.region === selectedFilter);
       }
       
