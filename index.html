@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V31 </title>
+  <title>Seoul Trip - V32 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -179,7 +179,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V31 </p>
+      <p>V32 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -219,7 +219,6 @@
     <div class="list-pane" id="content-container"></div>
   </div>
 
-  <!-- V31 離線快照 Modal -->
   <div class="modal-overlay" id="snapshotModal">
     <div class="modal">
       <h3 style="margin-top:0; color:var(--primary);" id="snapTitle">📸 當日離線快照</h3>
@@ -554,18 +553,17 @@
       });
     }
 
-    // V31: 開啟當日離線快照
     window.openSnapshotModal = function(dayIndex) {
       const day = appData[dayIndex];
       let text = `【 ${day.label} 離線快照 】\n`;
       if(day.subtitle) text += `副標題：${day.subtitle}\n`;
-      text += `區域：${day.regions ? day.regions.join(' / ') : '未設定'}\n`;
+      text += `區域：${day.regions && day.regions.length > 0 ? day.regions.join(' / ') : '未設定'}\n`;
       text += `==============================\n\n`;
 
       if(!day.events || day.events.length === 0) {
         text += `本日尚無行程排定。`;
       } else {
-        day.events.forEach((ev, idx) => {
+        day.events.forEach((ev) => {
           text += `[${ev.time}] ${ev.title}\n`;
           if(ev.desc) text += `備註：${ev.desc}\n`;
           if(ev.subItems && ev.subItems.length > 0) {
@@ -1054,7 +1052,7 @@
     };
 
     window.saveDayRegions = function() {
-      const dayIndex = document.getElementById('drDayIndex').value;
+      const dayIndex = parseInt(document.getElementById('drDayIndex').value, 10);
       appData[dayIndex].subtitle = document.getElementById('drSubtitle').value;
       appData[dayIndex].regions = tempSelectedRegions;
       if(currentPocketRegion[dayIndex] !== 'All_Global') currentPocketRegion[dayIndex] = 'All'; 
@@ -1079,8 +1077,9 @@
       document.getElementById('blockModal').style.display = 'flex';
     };
 
+    // V32: 強制轉為純數字 parseInt 確保不會發生嚴格比對 (===) 失敗造成的白畫面
     window.saveBlock = function() {
-      const dayIndex = document.getElementById('bDayIndex').value;
+      const dayIndex = parseInt(document.getElementById('bDayIndex').value, 10);
       const evIndex = document.getElementById('bEvIndex').value;
       const newBlock = {
         time: document.getElementById('bTime').value || '12:00',
@@ -1091,19 +1090,28 @@
       if (evIndex === '') {
         newBlock.subItems = []; appData[dayIndex].events.push(newBlock);
       } else {
-        newBlock.subItems = appData[dayIndex].events[evIndex].subItems || [];
-        appData[dayIndex].events[evIndex] = newBlock;
+        const idx = parseInt(evIndex, 10);
+        newBlock.subItems = appData[dayIndex].events[idx].subItems || [];
+        appData[dayIndex].events[idx] = newBlock;
       }
       appData[dayIndex].events.sort((a, b) => a.time.localeCompare(b.time));
-      syncWithCloud(); document.getElementById('blockModal').style.display = 'none';
-      renderApp(); switchTab(dayIndex);
+      syncWithCloud(); 
+      document.getElementById('blockModal').style.display = 'none';
+      renderApp(); 
+      switchTab(dayIndex);
     };
 
-    function switchTab(activeIndex) {
-      document.querySelectorAll('.tab').forEach((tab, index) => tab.classList.toggle('active', index === activeIndex));
-      document.querySelectorAll('.day-content').forEach((content, index) => content.classList.toggle('active', index === activeIndex));
-      document.querySelectorAll('.tab')[activeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
+    // V32: 修正 switchTab 中嚴格等於比對不到字串的問題
+    window.switchTab = function(activeIndex) {
+      const targetIndex = parseInt(activeIndex, 10);
+      document.querySelectorAll('.tab').forEach((tab, index) => tab.classList.toggle('active', index === targetIndex));
+      document.querySelectorAll('.day-content').forEach((content, index) => content.classList.toggle('active', index === targetIndex));
+      
+      const activeTabEl = document.querySelectorAll('.tab')[targetIndex];
+      if(activeTabEl) {
+        activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    };
 
     function togglePocket(dayIndex) { document.getElementById(`pocket-content-${dayIndex}`).classList.toggle('open'); }
     function switchPocketRegion(dayIndex, region) { currentPocketRegion[dayIndex] = region; renderPocketGrid(dayIndex, 'All'); }
@@ -1207,7 +1215,7 @@
       document.getElementById('pocketModal').style.display = 'flex';
     };
 
-    function openBlockSelectModal(dayIndex, name, mapQuery) {
+    window.openBlockSelectModal = function(dayIndex, name, mapQuery) {
       document.getElementById('bsItemName').innerText = name;
       document.getElementById('bsDayIndex').value = dayIndex;
       document.getElementById('bsItemMapQ').value = mapQuery;
@@ -1216,11 +1224,11 @@
         const option = document.createElement('option'); option.value = i; option.innerText = `[${ev.time}] ${ev.title}`; selectEl.appendChild(option);
       });
       document.getElementById('blockSelectModal').style.display = 'flex';
-    }
+    };
 
-    function confirmAddBlock() {
-      const dayIndex = document.getElementById('bsDayIndex').value;
-      const blockIndex = document.getElementById('bsBlockSelect').value;
+    window.confirmAddBlock = function() {
+      const dayIndex = parseInt(document.getElementById('bsDayIndex').value, 10);
+      const blockIndex = parseInt(document.getElementById('bsBlockSelect').value, 10);
       if (!appData[dayIndex].events[blockIndex].subItems) appData[dayIndex].events[blockIndex].subItems = [];
       appData[dayIndex].events[blockIndex].subItems.push({ 
         name: document.getElementById('bsItemName').innerText, 
@@ -1228,15 +1236,15 @@
       });
       syncWithCloud(); document.getElementById('blockSelectModal').style.display = 'none';
       renderApp(); switchTab(dayIndex); document.getElementById(`pocket-content-${dayIndex}`).classList.add('open');
-    }
+    };
 
-    function removeSubItem(dayIndex, evIndex, subIdx) {
+    window.removeSubItem = function(dayIndex, evIndex, subIdx) {
       if(confirm('確定要從這個區間移除此項目嗎？')) { appData[dayIndex].events[evIndex].subItems.splice(subIdx, 1); syncWithCloud(); renderApp(); switchTab(dayIndex); }
-    }
+    };
 
-    function deleteFromPocket(name) {
+    window.deleteFromPocket = function(name) {
       if(confirm(`確定徹底刪除 [${name}] 嗎？`)) { pocketDB = pocketDB.filter(item => item.name !== name); syncWithCloud(); renderApp(); }
-    }
+    };
 
     window.saveToPocket = function() {
       const oldName = document.getElementById('pOriginalName').value;
@@ -1292,11 +1300,11 @@
       syncWithCloud(); 
       document.getElementById('pocketModal').style.display = 'none'; 
       renderApp();
-    }
+    };
 
-    function deleteEvent(dayIndex, eventIndex) {
+    window.deleteEvent = function(dayIndex, eventIndex) {
       if(confirm('確定要移除整個時間區間嗎？')) { appData[dayIndex].events.splice(eventIndex, 1); syncWithCloud(); renderApp(); switchTab(dayIndex); }
-    }
+    };
 
     window.updateMap = function(query, cardElement) {
       if(mapIframe.dataset.currentQuery !== query) {
