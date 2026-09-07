@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V19.1 </title>
+  <title>Seoul Trip - V20.1 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -27,6 +27,9 @@
     .map-pane iframe { width: 100%; height: 100%; border: 0; }
     .list-pane { flex: 1; min-height: 80vh; }
     
+    .naver-toilet-btn { position: absolute; top: 16px; right: 16px; background: #03C75A; color: white; border: none; padding: 10px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10; display: flex; align-items: center; gap: 6px; transition: transform 0.2s; text-decoration: none; }
+    .naver-toilet-btn:hover { transform: scale(1.05); }
+
     .day-content { display: none; animation: fadeIn 0.3s ease; }
     .day-content.active { display: block; }
     
@@ -121,6 +124,7 @@
       .map-pane { position: sticky; top: 110px; height: 35vh; width: 100%; z-index: 90; border-radius: 12px; }
       .list-pane { width: 100%; }
       .header { top: -1px; }
+      .naver-toilet-btn { top: 12px; right: 12px; font-size: 12px; padding: 8px 12px; }
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -130,7 +134,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V19.1 </p>
+      <p>V20.1 </p>
     </div>
     <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
   </div>
@@ -138,6 +142,10 @@
 
   <div class="split-layout">
     <div class="map-pane">
+      <!-- 修正網址編碼：將 화장실 改為 개방화장실 (%EA%B0%9C%EB%B0%A9%ED%99%94%EC%9E%A5%EC%8B%A4) -->
+      <a href="https://map.naver.com/v5/search/%EA%B0%9C%EB%B0%A9%ED%99%94%EC%9E%A5%EC%8B%A4" target="_blank" class="naver-toilet-btn">
+        🚻 附近開放公廁 (Naver)
+      </a>
       <iframe id="map-iframe" src="https://maps.google.com/maps?q=Seoul&t=&z=12&ie=UTF8&iwloc=&output=embed"></iframe>
     </div>
     <div class="list-pane" id="content-container"></div>
@@ -354,7 +362,6 @@
                 <div class="p-tab ${currentTabIndices[dayIndex]==='shop'?'active':''}" onclick="switchPocketTab(${dayIndex}, 'shop')">🛍️ 商店</div>
               </div>
               
-              <!-- V19.1 將按鈕區與卡片區拆離，避免 innerHTML 無限疊加 -->
               <div id="pocket-filters-${dayIndex}"></div>
               <div class="pocket-grid" id="pocket-grid-${dayIndex}"></div>
               
@@ -665,7 +672,6 @@
         return;
       }
       
-      // V19.1 修復：獨立更新過濾按鈕區
       const categories = [...new Set(baseFiltered.map(item => item.category))];
       let filtersHtml = `<div style="display:flex; gap:8px; overflow-x:auto; margin-bottom:12px; padding-bottom:4px; scrollbar-width:none;">`;
       const allActive = selectedCategory === 'All' ? 'background:var(--primary); color:white; border-color:var(--primary);' : 'background:white; color:#555; border-color:#ddd;';
@@ -677,7 +683,6 @@
       filtersHtml += `</div>`;
       filtersEl.innerHTML = filtersHtml;
 
-      // V19.1 修復：獨立更新卡片區
       const displayItems = selectedCategory === 'All' ? baseFiltered : baseFiltered.filter(item => item.category === selectedCategory);
       let cardsHtml = '';
       
@@ -758,7 +763,7 @@
       let region = '其他';
       if (/(島山|dosan)/i.test(text)) region = '島山';
       else if (/(漢南|hannam)/i.test(text)) region = '漢南';
-      else if (/(聖水|首爾林|seongsu)/i.test(text)) region = '聖水';
+      else if (/(聖水|首林|seongsu)/i.test(text)) region = '聖水';
       else if (/(弘大|hongdae)/i.test(text)) region = '弘大';
       else if (/(延南|yeonnam)/i.test(text)) region = '延南';
       else if (/(明洞|myeongdong)/i.test(text)) region = '明洞';
