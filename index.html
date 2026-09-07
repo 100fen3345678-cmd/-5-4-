@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V28.1 </title>
+  <title>Seoul Trip - V29 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -129,6 +129,13 @@
     .settlement-box h4 { margin: 0 0 8px 0; color: #854d0e; font-size: 15px; }
     .settlement-instruction { font-size: 13px; color: #713f12; margin-bottom: 4px; font-weight: 600; }
 
+    /* V29 歷史封存階段專屬樣式 */
+    .archive-card { background: #e2e8f0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; border: 1px solid #cbd5e1; }
+    .archive-header { padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #cbd5e1; transition: background 0.2s; }
+    .archive-header:hover { background: #b2bec3; }
+    .archive-body { padding: 10px 14px; background: white; display: none; }
+    .archive-body.open { display: block; }
+
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1300; justify-content: center; align-items: center; padding: 20px; }
     .modal { background: white; width: 100%; max-width: 450px; border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; position: relative; }
     
@@ -170,7 +177,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V28.1 </p>
+      <p>V29 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -700,6 +707,34 @@
       alert("已成功封存本階段帳目，當前記帳本已重新歸零！");
     };
 
+    // V29: 切換歷史階段展開/收合
+    window.toggleArchiveBody = function(headerEl) {
+      const bodyEl = headerEl.nextElementSibling;
+      bodyEl.classList.toggle('open');
+    };
+
+    // V29: 刪除歷史封存階段
+    window.deleteArchivedPhase = function(pIdx, event) {
+      event.stopPropagation();
+      if (confirm(`確定要刪除 [${archivedPhases[pIdx].title}] 嗎？此動作無法復原。`)) {
+        archivedPhases.splice(pIdx, 1);
+        syncWithCloud();
+        renderExpenseDrawer();
+      }
+    };
+
+    // V29: 還原歷史封存階段回未結算流水帳
+    window.unarchivePhase = function(pIdx, event) {
+      event.stopPropagation();
+      if (confirm(`確定要將 [${archivedPhases[pIdx].title}] 還原回當前未結算流水帳嗎？`)) {
+        const phase = archivedPhases.splice(pIdx, 1)[0];
+        expensesDB = [...phase.items, ...expensesDB];
+        syncWithCloud();
+        renderExpenseDrawer();
+        alert("已成功還原該階段帳目至未結算流水帳！");
+      }
+    };
+
     function renderExpenseDrawer() {
       const listContainer = document.getElementById('expenseListContainer');
       const settlementContainer = document.getElementById('settlementContainer');
@@ -804,16 +839,35 @@
         settlementContainer.innerHTML = '';
       }
 
+      // V29: 渲染歷史已封存階段 (支援展開檢視、還原、刪除)
       if (archivedPhases.length > 0) {
         let archHtml = `<h4 style="margin: 20px 0 8px 0; font-size: 14px; color: #475569;">📦 歷史已結算階段</h4>`;
         archivedPhases.forEach((phase, pIdx) => {
+          let itemsHtml = '';
+          phase.items.forEach(item => {
+            let itemAmtStr = item.currency === 'TWD' ? `NT$ ${item.amount.toLocaleString()}` : `₩ ${item.amount.toLocaleString()}`;
+            itemsHtml += `
+              <div style="display:flex; justify-content:space-between; font-size:12px; padding:4px 0; border-bottom:1px dashed #f1f5f9;">
+                <span><b>${item.title}</b> (${item.payer}付)</span>
+                <span style="color:var(--primary); font-weight:bold;">${itemAmtStr}</span>
+              </div>`;
+          });
+
           archHtml += `
-            <div style="background: #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 10px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 14px; color: #334155;">
-                <span>📂 ${phase.title}</span>
-                <span style="font-size: 11px; color: #64748b;">${phase.date}</span>
+            <div class="archive-card">
+              <div class="archive-header" onclick="toggleArchiveBody(this)">
+                <div>
+                  <div style="font-weight: bold; font-size: 14px; color: #334155;">📂 ${phase.title} ▾</div>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;">${phase.date} · 包含 ${phase.items.length} 筆帳目</div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button class="btn-small" style="background:#3182ce; color:white;" onclick="unarchivePhase(${pIdx}, event)">🔄 還原</button>
+                  <button class="btn-small danger" onclick="deleteArchivedPhase(${pIdx}, event)">🗑️</button>
+                </div>
               </div>
-              <div style="font-size: 12px; color: #64748b; margin-top: 4px;">包含 ${phase.items.length} 筆帳目已結清</div>
+              <div class="archive-body">
+                ${itemsHtml}
+              </div>
             </div>`;
         });
         archivedContainer.innerHTML = archHtml;
