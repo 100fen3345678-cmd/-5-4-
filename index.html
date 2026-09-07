@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V32 </title>
+  <title>Seoul Trip - V33 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -179,7 +179,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V32 </p>
+      <p>V33 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -292,15 +292,44 @@
   <div class="modal-overlay" id="voteModal"><div class="modal"><h3 style="margin-top:0; font-size:18px;">🙋‍♂️ 誰想去 <strong id="vItemName" style="color:var(--primary)"></strong>？</h3><input type="hidden" id="vItemNameHidden"><div class="region-checkbox-group" id="voteCheckboxes" style="margin-bottom:12px;"></div><div class="modal-actions"><button class="btn-save" style="width:100%" onclick="closeVoteModal()">完成</button></div></div></div>
   <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="bMapQ" placeholder="輸入關鍵字"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
   
+  <!-- V33 口袋名單新增/編輯Modal大升級：改用下拉選單 -->
   <div class="modal-overlay" id="pocketModal">
     <div class="modal">
       <h3 style="margin-top:0;" id="pModalTitle">✨ 新增名單</h3>
       <input type="hidden" id="pOriginalName">
       <div class="form-group"><label>名稱</label><input type="text" id="pName"></div>
+      
+      <div style="display: flex; gap: 10px;">
+        <div class="form-group" style="flex: 1;">
+          <label>分類</label>
+          <select id="pType">
+            <option value="food">🍽️ 美食 (正餐/咖啡/甜點)</option>
+            <option value="shop">🛍️ 商店 (服飾/美妝/雜貨)</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>區域</label>
+          <select id="pRegionSelect" onchange="toggleCustomRegion()">
+            <option value="弘大">弘大</option>
+            <option value="延南">延南</option>
+            <option value="聖水">聖水</option>
+            <option value="漢南">漢南</option>
+            <option value="島山">島山</option>
+            <option value="明洞">明洞</option>
+            <option value="custom">✍️ 自訂其他...</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group" id="customRegionGroup" style="display: none;">
+        <label>輸入自訂區域</label>
+        <input type="text" id="pRegionCustom" placeholder="例如: 安國、江南...">
+      </div>
+
       <div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="pMapQ" placeholder="例如: 弘大 豬肉商會"></div>
       <div class="form-group"><label>Naver Map 專屬連結 (選填)</label><input type="text" id="pNaverLink" placeholder="例如: https://naver.me/..."></div>
       <div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div>
-      <div class="form-group"><label>手動修改地區 (可自填新區)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div>
+      
       <div class="modal-actions">
         <button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button>
         <button class="btn-save" onclick="saveToPocket()" id="pBtnSave">加入名單</button>
@@ -1077,7 +1106,6 @@
       document.getElementById('blockModal').style.display = 'flex';
     };
 
-    // V32: 強制轉為純數字 parseInt 確保不會發生嚴格比對 (===) 失敗造成的白畫面
     window.saveBlock = function() {
       const dayIndex = parseInt(document.getElementById('bDayIndex').value, 10);
       const evIndex = document.getElementById('bEvIndex').value;
@@ -1101,7 +1129,6 @@
       switchTab(dayIndex);
     };
 
-    // V32: 修正 switchTab 中嚴格等於比對不到字串的問題
     window.switchTab = function(activeIndex) {
       const targetIndex = parseInt(activeIndex, 10);
       document.querySelectorAll('.tab').forEach((tab, index) => tab.classList.toggle('active', index === targetIndex));
@@ -1189,18 +1216,23 @@
       gridEl.innerHTML = cardsHtml;
     }
 
+    // V33: 開啟新增口袋名單 (預設清空欄位與還原選單)
     window.openNewPocketModal = function() {
       document.getElementById('pModalTitle').innerText = '✨ 新增名單';
       document.getElementById('pBtnSave').innerText = '加入名單';
       document.getElementById('pOriginalName').value = '';
       document.getElementById('pName').value = '';
+      document.getElementById('pType').value = 'food';
+      document.getElementById('pRegionSelect').value = '弘大';
+      document.getElementById('customRegionGroup').style.display = 'none';
+      document.getElementById('pRegionCustom').value = '';
       document.getElementById('pMapQ').value = '';
       document.getElementById('pNaverLink').value = '';
       document.getElementById('pDesc').value = '';
-      document.getElementById('pRegion').value = '';
       document.getElementById('pocketModal').style.display = 'flex';
     };
 
+    // V33: 開啟編輯口袋名單 (帶入現有資料到選單)
     window.openEditPocketModal = function(name) {
       const item = pocketDB.find(p => p.name === name);
       if(!item) return;
@@ -1208,11 +1240,35 @@
       document.getElementById('pBtnSave').innerText = '儲存修改';
       document.getElementById('pOriginalName').value = item.name;
       document.getElementById('pName').value = item.name;
+      
+      document.getElementById('pType').value = item.type || 'food';
+      
+      const regionSelect = document.getElementById('pRegionSelect');
+      const standardRegions = ["弘大", "延南", "聖水", "漢南", "島山", "明洞"];
+      if (standardRegions.includes(item.region)) {
+        regionSelect.value = item.region;
+        document.getElementById('customRegionGroup').style.display = 'none';
+        document.getElementById('pRegionCustom').value = '';
+      } else {
+        regionSelect.value = 'custom';
+        document.getElementById('customRegionGroup').style.display = 'block';
+        document.getElementById('pRegionCustom').value = item.region || '';
+      }
+
       document.getElementById('pMapQ').value = item.mapQuery;
       document.getElementById('pNaverLink').value = item.naverLink || '';
       document.getElementById('pDesc').value = item.desc || '';
-      document.getElementById('pRegion').value = item.region || '';
       document.getElementById('pocketModal').style.display = 'flex';
+    };
+
+    // V33: 切換自訂區域輸入框的顯示
+    window.toggleCustomRegion = function() {
+      const select = document.getElementById('pRegionSelect').value;
+      if (select === 'custom') {
+        document.getElementById('customRegionGroup').style.display = 'block';
+      } else {
+        document.getElementById('customRegionGroup').style.display = 'none';
+      }
     };
 
     window.openBlockSelectModal = function(dayIndex, name, mapQuery) {
@@ -1246,29 +1302,22 @@
       if(confirm(`確定徹底刪除 [${name}] 嗎？`)) { pocketDB = pocketDB.filter(item => item.name !== name); syncWithCloud(); renderApp(); }
     };
 
+    // V33: 儲存口袋名單 (改由讀取下拉選單的值)
     window.saveToPocket = function() {
       const oldName = document.getElementById('pOriginalName').value;
       const name = document.getElementById('pName').value.trim();
       const mapQuery = document.getElementById('pMapQ').value.trim() || name;
       const naverLink = document.getElementById('pNaverLink').value.trim();
       const desc = document.getElementById('pDesc').value;
-      const manualRegion = document.getElementById('pRegion').value.trim();
       
       if(!name) return alert("請輸入名稱！");
       
-      let text = (name + " " + desc).toLowerCase(); let type = 'food'; let category = '日常快充'; 
-      if (/(服飾|衣服|潮牌|包包|鞋|옷|apparel|fashion)/i.test(text)) { type = 'shop'; category = '服飾潮牌'; } 
-      else if (/(咖啡|甜點|大福|麵包|茶|cafe|coffee|bakery)/i.test(text)) { type = 'food'; category = '續攤回血'; }
+      const type = document.getElementById('pType').value;
+      const category = type === 'food' ? '日常快充' : '服飾潮牌';
       
-      let region = '其他';
-      if (/(島山|dosan)/i.test(text)) region = '島山';
-      else if (/(漢南|hannam)/i.test(text)) region = '漢南';
-      else if (/(聖水|首爾林|seongsu)/i.test(text)) region = '聖水';
-      else if (/(弘大|hongdae)/i.test(text)) region = '弘大';
-      else if (/(延南|yeonnam)/i.test(text)) region = '延南';
-      else if (/(明洞|myeongdong)/i.test(text)) region = '明洞';
-      
-      if (manualRegion !== '') region = manualRegion;
+      const regionSelect = document.getElementById('pRegionSelect').value;
+      let region = regionSelect === 'custom' ? document.getElementById('pRegionCustom').value.trim() : regionSelect;
+      if (!region) region = '其他';
       
       if (oldName) {
         const pIndex = pocketDB.findIndex(p => p.name === oldName);
