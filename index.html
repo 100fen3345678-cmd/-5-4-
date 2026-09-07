@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V26 </title>
+  <title>Seoul Trip - V27 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -112,7 +112,7 @@
     .sortable-ghost { opacity: 0.4; background: #ffe3e3 !important; }
     .sortable-drag { opacity: 0.9; transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
 
-    /* V26 側邊記帳抽屜樣式 */
+    /* V27 側邊記帳抽屜樣式 */
     .expense-drawer { position: fixed; top: 0; right: -420px; width: 400px; max-width: 100%; height: 100vh; background: white; box-shadow: -5px 0 25px rgba(0,0,0,0.15); z-index: 1200; transition: right 0.3s ease; display: flex; flex-direction: column; }
     .expense-drawer.open { right: 0; }
     .drawer-header { background: var(--primary); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -171,7 +171,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V26 </p>
+      <p>V27 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -180,7 +180,7 @@
   </div>
   <div class="tabs" id="tabs-container"></div>
 
-  <!-- V26 側邊記帳抽屜 -->
+  <!-- V27 側邊記帳抽屜 -->
   <div class="expense-drawer" id="expenseDrawer">
     <div class="drawer-header">
       <h3>💸 旅遊共編記帳本</h3>
@@ -211,7 +211,7 @@
     <div class="list-pane" id="content-container"></div>
   </div>
 
-  <!-- V26 記帳新增/編輯 Modal -->
+  <!-- V27 記帳新增/編輯 Modal -->
   <div class="modal-overlay" id="expenseModal">
     <div class="modal">
       <h3 style="margin-top:0;" id="expModalTitle">💸 新增代墊花費</h3>
@@ -221,7 +221,6 @@
         <input type="text" id="expTitle" placeholder="例如: 機票、住宿、弘大烤肉...">
       </div>
       
-      <!-- V26 幣值與金額動態選取 -->
       <div style="display: flex; gap: 10px;">
         <div class="form-group" style="flex: 1;">
           <label>幣值 (Currency)</label>
@@ -236,7 +235,6 @@
         </div>
       </div>
 
-      <!-- 僅在 KRW 時顯示的匯率微調區 -->
       <div class="form-group" id="krwRateGroup">
         <label>當筆換算匯率 (KRW : TWD)</label>
         <input type="number" id="expRate" value="42" placeholder="42">
@@ -592,7 +590,6 @@
       }
     }
 
-    // V26: 幣值切換連動顯示匯率框
     function toggleCurrencyMode() {
       const cur = document.getElementById('expCurrency').value;
       const rateGroup = document.getElementById('krwRateGroup');
@@ -684,7 +681,7 @@
       }
     };
 
-    // V26 支援多幣值的流水帳與結算演算法
+    // V27 支援結算同時呈現韓元與台幣總額
     function renderExpenseDrawer() {
       const listContainer = document.getElementById('expenseListContainer');
       const settlementContainer = document.getElementById('settlementContainer');
@@ -719,18 +716,24 @@
       });
       listContainer.innerHTML = html;
 
-      // 2. 計算各成員台幣淨餘額 (統一換算成 TWD 結算)
+      // 2. 計算各成員台幣淨餘額與總消費韓元統計
       let balances = {};
+      travelers.totalKrw = 0;
       travelers.forEach(t => balances[t] = 0);
 
+      let totalSpentKrwAll = 0;
       expensesDB.forEach(exp => {
         let twdTotal = 0;
+        let krwEquivalent = 0;
         if (exp.currency === 'TWD') {
           twdTotal = exp.amount;
+          krwEquivalent = exp.amount * 42; // 預設用42還原顯示韓元總額參考
         } else {
           twdTotal = exp.amount / (exp.rate || 42);
+          krwEquivalent = exp.amount;
         }
 
+        totalSpentKrwAll += krwEquivalent;
         const twdShare = twdTotal / exp.participants.length;
         balances[exp.payer] += twdTotal; 
         exp.participants.forEach(p => {
@@ -738,7 +741,9 @@
         });
       });
 
-      // 3. 最低轉帳次數演算法 (以台幣為單位進行債務簡化)
+      let totalSpentTwdAll = Math.round(totalSpentKrwAll / 42); // 概算參考
+
+      // 3. 最低轉帳次數演算法 (以台幣為單位進行債務簡化，並同時帶出雙幣對照)
       let debtors = []; 
       let creditors = []; 
 
@@ -754,12 +759,13 @@
       let transactions = [];
       let d = 0, c = 0;
       while (d < debtors.length && c < creditors.length) {
-        let payAmount = Math.min(debtors[d].amount, creditors[c].amount);
+        let payAmountTwd = Math.min(debtors[d].amount, creditors[c].amount);
+        let payAmountKrw = payAmountTwd * 42; // 換算回韓元雙軌呈現
         
-        transactions.push(`<b>${debtors[d].name}</b> 轉帳給 <b>${creditors[c].name}</b> : <b>NT$ ${payAmount.toLocaleString()}</b>`);
+        transactions.push(`<b>${debtors[d].name}</b> 轉帳給 <b>${creditors[c].name}</b> : <b>NT$ ${payAmountTwd.toLocaleString()}</b> <span style="font-size:12px; font-weight:normal; color:#854d0e;">(約 ₩ ${payAmountKrw.toLocaleString()})</span>`);
         
-        debtors[d].amount -= payAmount;
-        creditors[c].amount -= payAmount;
+        debtors[d].amount -= payAmountTwd;
+        creditors[c].amount -= payAmountTwd;
         
         if (debtors[d].amount === 0) d++;
         if (creditors[c].amount === 0) c++;
@@ -767,7 +773,9 @@
 
       let settleHtml = `
         <div class="settlement-box">
-          <h4>💡 智慧結算 (最終應付台幣總額)</h4>`;
+          <div style="font-size: 13px; color: #854d0e; margin-bottom: 8px; font-weight: bold;">💰 累計總支出：₩ ${Math.round(totalSpentKrwAll).toLocaleString()} (約 NT$ ${Math.round(totalSpentTwdAll).toLocaleString()})</div>
+          <hr style="border:0; border-top:1px solid #fde047; margin: 8px 0;">
+          <h4 style="margin: 0 0 8px 0;">💡 智慧結算 (最低轉帳次數建議)</h4>`;
       if (transactions.length === 0) {
         settleHtml += `<div class="settlement-instruction" style="color:#166534;">目前大家互不相欠，完美平手！</div>`;
       } else {
@@ -1007,6 +1015,7 @@
           ? `<div style="position:absolute; top:10px; right:65px; display:flex; flex-direction:column; align-items:flex-end; z-index:2; pointer-events:none;">${schedBadgeHtml}${wantBadgeHtml}</div>` 
           : '';
 
+        /* V27 移除口袋名單卡片上的記帳按鈕，維持乾淨版面 */
         cardsHtml += `
           <div class="pocket-card ${item.type}" data-name="${escName}" data-mapquery="${escQuery}" onclick="updateMap('${safeQuery}', this)">
             <div class="pocket-drag-handle" onclick="event.stopPropagation()">⋮⋮</div>
@@ -1016,7 +1025,6 @@
             <h4>${item.name}</h4><span class="cat-tag">${item.region} · ${item.category}</span>
             <p>${linkify(item.desc)}</p>
             <div style="position:absolute; bottom:12px; right:12px; display:flex; gap:6px; z-index:2;">
-              <button class="btn-small" style="background:#8b5cf6; color:white;" onclick="event.stopPropagation(); openExpenseModal('${safeName}')">💸 記帳</button>
               <button class="btn-small" style="background:#fef08a; color:#854d0e; border:1px solid #fde047;" onclick="event.stopPropagation(); openVoteModal('${safeName}')">🙋‍♂️ 想去</button>
               <button class="btn-small" style="background:var(--primary); color:white;" onclick="event.stopPropagation(); openBlockSelectModal(${dayIndex}, '${safeName}', '${safeQuery}')">➕ 加入</button>
             </div>
