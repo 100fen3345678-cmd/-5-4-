@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V30.1 </title>
+  <title>Seoul Trip - V31 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -43,8 +43,11 @@
     .day-titles h2 { margin: 0; font-size: 20px; color: var(--primary); line-height: 1.2; }
     .day-titles .subtitle { margin: 0; font-size: 14px; color: var(--text-muted); font-weight: 500; }
     
-    .btn-setting { background: #e2e8f0; color: #4a5568; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; flex-shrink: 0; height: 32px; }
+    .day-header-btns { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-setting { background: #e2e8f0; color: #4a5568; border: none; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; height: 32px; }
     .btn-setting:hover { background: #cbd5e0; }
+    .btn-snapshot { background: #3182ce; color: white; border: none; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; height: 32px; display: flex; align-items: center; gap: 4px; }
+    .btn-snapshot:hover { background: #2b6cb0; }
 
     .timeline-list { min-height: 50px; }
     .timeline-item { background: var(--card-bg); border-radius: 12px; padding: 16px 16px 16px 52px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; gap: 16px; position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease; flex-direction: column; cursor: pointer; }
@@ -176,7 +179,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V30.1 </p>
+      <p>V31 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -214,6 +217,19 @@
       <iframe id="map-iframe" src="https://maps.google.com/maps?q=Seoul&t=&z=12&ie=UTF8&iwloc=&output=embed"></iframe>
     </div>
     <div class="list-pane" id="content-container"></div>
+  </div>
+
+  <!-- V31 離線快照 Modal -->
+  <div class="modal-overlay" id="snapshotModal">
+    <div class="modal">
+      <h3 style="margin-top:0; color:var(--primary);" id="snapTitle">📸 當日離線快照</h3>
+      <p style="font-size: 12px; color: #666; margin-top: -4px;">網路不穩或在地鐵深處時，可直接查看此畫面或截圖備用！</p>
+      <div id="snapContentBox" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; font-size: 13px; max-height: 50vh; overflow-y: auto; white-space: pre-wrap; word-break: break-word; font-family: monospace; line-height: 1.6; margin-bottom: 16px;"></div>
+      <div class="modal-actions" style="flex-direction: column; gap: 8px;">
+        <button class="btn-save" style="width: 100%; background: #3182ce;" onclick="copySnapshotText()">📋 複製整日快照文字</button>
+        <button class="btn-cancel" style="width: 100%;" onclick="document.getElementById('snapshotModal').style.display='none'">關閉</button>
+      </div>
+    </div>
   </div>
 
   <div class="modal-overlay" id="expenseModal">
@@ -456,7 +472,10 @@
               <h2>${mainTitle}</h2>
               ${subTitleHtml}
             </div>
-            <button class="btn-setting" onclick="openDayRegionModal(${dayIndex})">⚙️ 設定區域</button>
+            <div class="day-header-btns">
+              <button class="btn-snapshot" onclick="openSnapshotModal(${dayIndex})">📸 快照</button>
+              <button class="btn-setting" onclick="openDayRegionModal(${dayIndex})">⚙️ 設定</button>
+            </div>
           </div>
         `;
         
@@ -535,7 +554,44 @@
       });
     }
 
-    // V30.1 升級：加入 scroll 參數，讓拖曳時頁面會自動捲動
+    // V31: 開啟當日離線快照
+    window.openSnapshotModal = function(dayIndex) {
+      const day = appData[dayIndex];
+      let text = `【 ${day.label} 離線快照 】\n`;
+      if(day.subtitle) text += `副標題：${day.subtitle}\n`;
+      text += `區域：${day.regions ? day.regions.join(' / ') : '未設定'}\n`;
+      text += `==============================\n\n`;
+
+      if(!day.events || day.events.length === 0) {
+        text += `本日尚無行程排定。`;
+      } else {
+        day.events.forEach((ev, idx) => {
+          text += `[${ev.time}] ${ev.title}\n`;
+          if(ev.desc) text += `備註：${ev.desc}\n`;
+          if(ev.subItems && ev.subItems.length > 0) {
+            text += `  ➔ 包含地點：\n`;
+            ev.subItems.forEach(sub => {
+              text += `     - ${sub.name} (導航關鍵字: ${sub.mapQuery})\n`;
+            });
+          }
+          text += `------------------------------\n`;
+        });
+      }
+
+      document.getElementById('snapTitle').innerText = `📸 ${day.label} 離線快照`;
+      document.getElementById('snapContentBox').innerText = text;
+      document.getElementById('snapshotModal').style.display = 'flex';
+    };
+
+    window.copySnapshotText = function() {
+      const box = document.getElementById('snapContentBox');
+      navigator.clipboard.writeText(box.innerText).then(() => {
+        alert("已成功複製整日快照文字到剪貼簿！");
+      }).catch(err => {
+        alert("複製失敗，請手動選取複製。");
+      });
+    };
+
     function initSortable(dayIndex) {
       const listEl = document.getElementById(`timeline-list-${dayIndex}`);
       if (listEl) {
