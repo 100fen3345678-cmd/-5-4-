@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V28 </title>
+  <title>Seoul Trip - V28.1 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -112,7 +112,6 @@
     .sortable-ghost { opacity: 0.4; background: #ffe3e3 !important; }
     .sortable-drag { opacity: 0.9; transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
 
-    /* V28 側邊記帳抽屜樣式 */
     .expense-drawer { position: fixed; top: 0; right: -420px; width: 400px; max-width: 100%; height: 100vh; background: white; box-shadow: -5px 0 25px rgba(0,0,0,0.15); z-index: 1200; transition: right 0.3s ease; display: flex; flex-direction: column; }
     .expense-drawer.open { right: 0; }
     .drawer-header { background: var(--primary); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -171,7 +170,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V28 </p>
+      <p>V28.1 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -180,7 +179,6 @@
   </div>
   <div class="tabs" id="tabs-container"></div>
 
-  <!-- V28 側邊記帳抽屜 -->
   <div class="expense-drawer" id="expenseDrawer">
     <div class="drawer-header">
       <h3>💸 旅遊共編記帳本</h3>
@@ -192,14 +190,11 @@
         <button class="btn-cancel" style="width: 100%; padding: 8px; font-size: 13px; background: #e2e8f0; color: #334155;" onclick="archiveCurrentPhase()">✨ 結算目前階段並清空重設</button>
       </div>
 
-      <!-- 智慧結算指示面板 -->
       <div id="settlementContainer"></div>
 
-      <!-- 帳目流水記錄 -->
       <h4 style="margin: 16px 0 8px 0; font-size: 14px; color: #475569;">📜 當前未結算流水帳</h4>
       <div id="expenseListContainer"></div>
 
-      <!-- 歷史已封存階段 -->
       <div id="archivedPhasesContainer" style="margin-top: 24px;"></div>
     </div>
   </div>
@@ -215,7 +210,6 @@
     <div class="list-pane" id="content-container"></div>
   </div>
 
-  <!-- V28 記帳新增/編輯 Modal -->
   <div class="modal-overlay" id="expenseModal">
     <div class="modal">
       <h3 style="margin-top:0;" id="expModalTitle">💸 新增代墊花費</h3>
@@ -273,7 +267,6 @@
     </div>
   </div>
 
-  <!-- 其他 Modal -->
   <div class="modal-overlay" id="dayRegionModal"><div class="modal"><h3 style="margin-top:0;">⚙️ 設定當日目標區域</h3><input type="hidden" id="drDayIndex"><div class="form-group"><label>當日副標題 (選填)</label><input type="text" id="drSubtitle" placeholder="例如：逛街與烤肉之夜"></div><div class="form-group"><label>勾選包含區域 (會依據第一個選項動態顯示距離遠近)</label><div id="drCheckboxesDynamicArea"></div></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('dayRegionModal').style.display='none'">取消</button><button class="btn-save" onclick="saveDayRegions()">儲存設定</button></div></div></div>
   <div class="modal-overlay" id="voteModal"><div class="modal"><h3 style="margin-top:0; font-size:18px;">🙋‍♂️ 誰想去 <strong id="vItemName" style="color:var(--primary)"></strong>？</h3><input type="hidden" id="vItemNameHidden"><div class="region-checkbox-group" id="voteCheckboxes" style="margin-bottom:12px;"></div><div class="modal-actions"><button class="btn-save" style="width:100%" onclick="closeVoteModal()">完成</button></div></div></div>
   <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="bMapQ" placeholder="輸入關鍵字"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
@@ -371,7 +364,7 @@
     let appData = [];
     let pocketDB = [];
     let expensesDB = []; 
-    let archivedPhases = []; // V28 歷史已封存階段
+    let archivedPhases = []; 
     let currentTabIndices = { 0: 'food', 1: 'food', 2: 'food', 3: 'food', 4: 'food' };
     let currentPocketRegion = {}; 
     let tempSelectedRegions = [];
@@ -687,7 +680,6 @@
       }
     };
 
-    // V28: 結算目前階段並封存歸零
     window.archiveCurrentPhase = function() {
       if (expensesDB.length === 0) {
         return alert("目前沒有任何未結算的帳目可以封存！");
@@ -702,13 +694,12 @@
       };
 
       archivedPhases.push(newArchive);
-      expensesDB = []; // 歸零重設
+      expensesDB = []; 
       syncWithCloud();
       renderExpenseDrawer();
       alert("已成功封存本階段帳目，當前記帳本已重新歸零！");
     };
 
-    // V28 支援結算呈現與歷史封存清單渲染
     function renderExpenseDrawer() {
       const listContainer = document.getElementById('expenseListContainer');
       const settlementContainer = document.getElementById('settlementContainer');
@@ -716,7 +707,7 @@
 
       let html = '';
       if (expensesDB.length === 0) {
-        listContainer.innerHTML = `<p style="color: #888; font-size: 13px; text-align: center;">目前還沒有未結算的帳目！</p>";
+        listContainer.innerHTML = `<p style="color: #888; font-size: 13px; text-align: center;">目前還沒有未結算的帳目！</p>`;
         settlementContainer.innerHTML = '';
       } else {
         expensesDB.forEach((exp, idx) => {
@@ -742,7 +733,6 @@
         listContainer.innerHTML = html;
       }
 
-      // 2. 計算各成員台幣淨餘額與總消費韓元統計
       let balances = {};
       travelers.forEach(t => balances[t] = 0);
 
@@ -768,7 +758,6 @@
 
       let totalSpentTwdAll = Math.round(totalSpentKrwAll / 42); 
 
-      // 3. 最低轉帳次數演算法
       let debtors = []; 
       let creditors = []; 
 
@@ -815,7 +804,6 @@
         settlementContainer.innerHTML = '';
       }
 
-      // 4. 渲染歷史已封存階段
       if (archivedPhases.length > 0) {
         let archHtml = `<h4 style="margin: 20px 0 8px 0; font-size: 14px; color: #475569;">📦 歷史已結算階段</h4>`;
         archivedPhases.forEach((phase, pIdx) => {
