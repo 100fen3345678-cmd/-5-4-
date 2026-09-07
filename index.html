@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V18 </title>
+  <title>Seoul Trip - V19 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -52,7 +52,7 @@
     .content-col h3 { margin: 0 0 6px 0; font-size: 16px; }
     .content-col p { margin: 0; font-size: 14px; color: var(--text-muted); white-space: pre-wrap; word-break: break-word; }
     
-    .sub-items-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; margin-left: 66px; padding-top: 12px; border-top: 1px dashed #eee; min-height: 36px; }
+    .sub-items-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; margin-left: 66px; padding-top: 12px; border-top: 1px dashed #eee; min-height: 48px; }
     .sub-item-chip { background: #f0f4f8; color: #333; font-size: 13px; font-weight: 600; border-radius: 20px; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden; padding: 0; }
     
     .chip-drag-handle { background: #e2e8f0; padding: 6px 10px; cursor: grab; color: #718096; border-radius: 20px 0 0 20px; font-size: 14px; }
@@ -78,9 +78,15 @@
     .p-tab.active { background: #fff; border-color: var(--primary); color: var(--primary); }
     
     .pocket-grid { display: grid; grid-template-columns: 1fr; gap: 12px; min-height: 60px; }
-    .pocket-card { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #ccc; cursor: pointer; position: relative; }
-    .pocket-card.food { border-color: #FFA500; }
-    .pocket-card.shop { border-color: #4CAF50; }
+    /* 卡片加入左側空間容納拖曳把手 */
+    .pocket-card { background: white; padding: 12px 12px 12px 48px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; position: relative; }
+    
+    /* V19 新增：口袋名單專屬拖曳把手 */
+    .pocket-drag-handle { position: absolute; left: 0; top: 0; bottom: 0; width: 36px; background: #f0f4f8; border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; color: #a0aec0; font-size: 16px; cursor: grab; transition: 0.2s; border-left: 4px solid #ccc; }
+    .pocket-drag-handle:active { cursor: grabbing; background: var(--primary-light); color: white; }
+    .pocket-card:hover .pocket-drag-handle { background: var(--primary); color: white; border-left-color: var(--primary); }
+    .pocket-card.food .pocket-drag-handle { border-left-color: #FFA500; }
+    .pocket-card.shop .pocket-drag-handle { border-left-color: #4CAF50; }
     
     .scheduled-badge { position: absolute; top: 12px; right: 40px; background: #3182ce; color: white; font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
     
@@ -126,7 +132,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V18 </p>
+      <p>V19 </p>
     </div>
     <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
   </div>
@@ -173,10 +179,9 @@
 
   <!-- 其他 Modal -->
   <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>地圖預設關鍵字</label><input type="text" id="bMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
-  <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字</label><input type="text" id="pMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區，如：水原市)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
+  <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字</label><input type="text" id="pMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
   <div class="modal-overlay" id="blockSelectModal"><div class="modal"><h3 style="margin-top:0;">➕ 選擇區間</h3><p style="font-size:13px; color:#666;">將 <strong id="bsItemName" style="color:var(--primary)"></strong> 加入哪裡？</p><input type="hidden" id="bsDayIndex"><input type="hidden" id="bsItemMapQ"><div class="form-group"><select id="bsBlockSelect"></select></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockSelectModal').style.display='none'">取消</button><button class="btn-save" onclick="confirmAddBlock()">確定</button></div></div></div>
   
-  <!-- 商家資訊 Modal (V18 加入 Google Maps 捷徑與許願標籤) -->
   <div class="modal-overlay" id="infoModal">
     <div class="modal">
       <h3 style="margin-top:0; font-size:18px;" id="infoName"></h3>
@@ -368,6 +373,7 @@
     }
 
     function initSortable(dayIndex) {
+      // 區間拖曳 (大卡片)
       const listEl = document.getElementById(`timeline-list-${dayIndex}`);
       if (listEl) {
         Sortable.create(listEl, {
@@ -379,18 +385,54 @@
           }
         });
       }
+      
+      // 行程內子標籤的接收與互拉
       document.querySelectorAll(`#content-${dayIndex} .sub-items-container`).forEach(container => {
         Sortable.create(container, {
-          group: 'shared-subitems', animation: 150, handle: '.chip-drag-handle',
+          group: 'shared-subitems', 
+          animation: 150, 
+          handle: '.chip-drag-handle',
+          onAdd: function (evt) {
+            // V19 新增：當從口袋名單(pocket-grid)拖入區間時觸發
+            if (evt.from.classList.contains('pocket-grid')) {
+              const toDay = parseInt(evt.to.getAttribute('data-day'));
+              const toEv = parseInt(evt.to.getAttribute('data-event'));
+              const name = evt.item.getAttribute('data-name');
+              const mapQuery = evt.item.getAttribute('data-mapquery');
+              
+              appData[toDay].events[toEv].subItems.splice(evt.newIndex, 0, { name: name, mapQuery: mapQuery });
+              syncWithCloud(); 
+              renderApp(); // 觸發重繪，自動刷新卡片標籤與畫面
+            }
+          },
           onEnd: function (evt) {
-            const fromDay = dayIndex; const toDay = parseInt(evt.to.getAttribute('data-day'));
-            const fromEv = parseInt(evt.from.getAttribute('data-event')); const toEv = parseInt(evt.to.getAttribute('data-event'));
-            const itemData = appData[fromDay].events[fromEv].subItems.splice(evt.oldIndex, 1)[0];
-            appData[toDay].events[toEv].subItems.splice(evt.newIndex, 0, itemData);
-            syncWithCloud(); renderApp(); 
+            // 在原區間或跨區間互相拉動標籤
+            if (evt.from.classList.contains('sub-items-container') && evt.to && evt.to.classList.contains('sub-items-container')) {
+              const fromDay = parseInt(evt.from.getAttribute('data-day')); 
+              const toDay = parseInt(evt.to.getAttribute('data-day'));
+              const fromEv = parseInt(evt.from.getAttribute('data-event')); 
+              const toEv = parseInt(evt.to.getAttribute('data-event'));
+              
+              if (!isNaN(fromDay) && !isNaN(toDay)) {
+                const itemData = appData[fromDay].events[fromEv].subItems.splice(evt.oldIndex, 1)[0];
+                appData[toDay].events[toEv].subItems.splice(evt.newIndex, 0, itemData);
+                syncWithCloud(); renderApp(); 
+              }
+            }
           }
         });
       });
+
+      // V19 新增：讓口袋名單成為可拖出的資料庫
+      const pocketGrid = document.getElementById(`pocket-grid-${dayIndex}`);
+      if (pocketGrid) {
+        Sortable.create(pocketGrid, {
+          group: { name: 'shared-subitems', pull: 'clone', put: false }, // 設為 clone 且禁止放回，保持資料庫完整
+          sort: false,
+          handle: '.pocket-drag-handle',
+          animation: 150
+        });
+      }
     }
 
     window.openVoteModal = function(name) {
@@ -639,12 +681,15 @@
         const isActive = selectedCategory === cat ? 'background:var(--primary); color:white; border-color:var(--primary);' : 'background:white; color:#555; border-color:#ddd;';
         html += `<button style="padding:4px 12px; font-size:13px; border-radius:12px; border:1px solid; cursor:pointer; flex-shrink:0; ${isActive}" onclick="renderPocketGrid(${dayIndex}, '${cat}')">${cat}</button>`;
       });
-      html += `</div><div style="display:grid; grid-template-columns:1fr; gap:12px;">`;
+      html += `</div><div class="pocket-grid" id="pocket-grid-${dayIndex}">`;
 
       const displayItems = selectedCategory === 'All' ? baseFiltered : baseFiltered.filter(item => item.category === selectedCategory);
       
       displayItems.forEach((item) => {
-        const safeName = item.name.replace(/'/g, "\\'"); const safeQuery = item.mapQuery.replace(/'/g, "\\'");
+        const escName = item.name.replace(/"/g, '&quot;');
+        const escQuery = item.mapQuery.replace(/"/g, '&quot;');
+        const safeName = item.name.replace(/'/g, "\\'"); 
+        const safeQuery = item.mapQuery.replace(/'/g, "\\'");
         
         const scheduledDays = getScheduledDays(item.name);
         const schedBadgeHtml = scheduledDays.length > 0 ? `<div class="scheduled-badge" style="position:static; margin-bottom:4px;">📍 排入 ${scheduledDays.join(', ')}</div>` : '';
@@ -658,19 +703,21 @@
           ? `<div style="position:absolute; top:10px; right:35px; display:flex; flex-direction:column; align-items:flex-end; z-index:2; pointer-events:none;">${schedBadgeHtml}${wantBadgeHtml}</div>` 
           : '';
 
+        // V19: 加入 .pocket-drag-handle 與 data-* 屬性供拖曳辨識使用
         html += `
-          <div class="pocket-card ${item.type}" onclick="updateMap('${safeQuery}', this)">
+          <div class="pocket-card ${item.type}" data-name="${escName}" data-mapquery="${escQuery}" onclick="updateMap('${safeQuery}', this)">
+            <div class="pocket-drag-handle" onclick="event.stopPropagation()">⋮⋮</div>
             <button class="del-btn" onclick="event.stopPropagation(); deleteFromPocket('${safeName}')">🗑️</button>
             ${badgesContainerHtml}
             <h4>${item.name}</h4><span class="cat-tag">${item.region} · ${item.category}</span>
             <p>${linkify(item.desc)}</p>
-            <div style="position:absolute; bottom:12px; right:12px; display:flex; gap:6px;">
+            <div style="position:absolute; bottom:12px; right:12px; display:flex; gap:6px; z-index:2;">
               <button class="btn-small" style="background:#fef08a; color:#854d0e; border:1px solid #fde047;" onclick="event.stopPropagation(); openVoteModal('${safeName}')">🙋‍♂️ 想去</button>
               <button class="btn-small" style="background:var(--primary); color:white;" onclick="event.stopPropagation(); openBlockSelectModal(${dayIndex}, '${safeName}', '${safeQuery}')">➕ 加入</button>
             </div>
           </div>`;
       });
-      html += `</div>`; grid.innerHTML = html;
+      html += `</div>`; grid.outerHTML = html; // 使用 outerHTML 或直接取代 innerHTML 皆可，此處配合上方 grid 架構微調
     }
 
     function openBlockSelectModal(dayIndex, name, mapQuery) {
@@ -747,17 +794,14 @@
       if(cardElement) cardElement.classList.add('active-card');
     };
 
-    // V18: 彈窗加入外部 Map 連結與許願標籤同步
     window.viewSubItem = function(name, mapQuery) {
       updateMap(mapQuery, null); 
       const item = pocketDB.find(p => p.name === name);
       document.getElementById('infoName').innerText = name;
       
-      // 更新按鈕的外部 Google Maps 連結
       document.getElementById('infoMapLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
       
       if (item) {
-        // 渲染許願標籤
         if (item.wantToGo && item.wantToGo.length > 0) {
           document.getElementById('infoWantBadge').innerHTML = `<span style="background:#ecc94b; color:#744210; font-size:12px; padding:4px 8px; border-radius:6px; font-weight:bold; display:inline-block;">🙋‍♂️ ${item.wantToGo.join(', ')} 想去</span>`;
         } else {
