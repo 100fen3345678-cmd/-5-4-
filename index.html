@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V17 </title>
+  <title>Seoul Trip - V18 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -82,6 +82,8 @@
     .pocket-card.food { border-color: #FFA500; }
     .pocket-card.shop { border-color: #4CAF50; }
     
+    .scheduled-badge { position: absolute; top: 12px; right: 40px; background: #3182ce; color: white; font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
+    
     .pocket-card h4 { margin: 0 24px 4px 0; font-size: 15px; }
     .pocket-card .cat-tag { font-size: 11px; padding: 2px 6px; background: #eee; border-radius: 4px; color: #555; display: inline-block; margin-bottom: 6px; font-weight:bold; }
     .pocket-card p { margin: 0 0 4px 0; font-size: 13px; color: var(--text-muted); white-space: pre-wrap; word-break: break-word; }
@@ -124,7 +126,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V17 </p>
+      <p>V18 </p>
     </div>
     <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
   </div>
@@ -173,7 +175,20 @@
   <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>地圖預設關鍵字</label><input type="text" id="bMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
   <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字</label><input type="text" id="pMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區，如：水原市)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
   <div class="modal-overlay" id="blockSelectModal"><div class="modal"><h3 style="margin-top:0;">➕ 選擇區間</h3><p style="font-size:13px; color:#666;">將 <strong id="bsItemName" style="color:var(--primary)"></strong> 加入哪裡？</p><input type="hidden" id="bsDayIndex"><input type="hidden" id="bsItemMapQ"><div class="form-group"><select id="bsBlockSelect"></select></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockSelectModal').style.display='none'">取消</button><button class="btn-save" onclick="confirmAddBlock()">確定</button></div></div></div>
-  <div class="modal-overlay" id="infoModal"><div class="modal"><h3 style="margin-top:0; font-size:18px;" id="infoName"></h3><span id="infoTag" style="display:inline-block; font-size:12px; padding:4px 8px; background:#eee; border-radius:6px; color:#555; margin-bottom:12px; font-weight:bold;"></span><p id="infoDesc" style="font-size:14px; color:#666; line-height:1.6; margin-top:0;"></p><div class="modal-actions"><button class="btn-save" style="width:100%;" onclick="document.getElementById('infoModal').style.display='none'">關閉</button></div></div></div>
+  
+  <!-- 商家資訊 Modal (V18 加入 Google Maps 捷徑與許願標籤) -->
+  <div class="modal-overlay" id="infoModal">
+    <div class="modal">
+      <h3 style="margin-top:0; font-size:18px;" id="infoName"></h3>
+      <div id="infoWantBadge" style="margin-bottom:8px;"></div>
+      <span id="infoTag" style="display:inline-block; font-size:12px; padding:4px 8px; background:#eee; border-radius:6px; color:#555; margin-bottom:12px; font-weight:bold;"></span>
+      <p id="infoDesc" style="font-size:14px; color:#666; line-height:1.6; margin-top:0; margin-bottom:20px;"></p>
+      <div class="modal-actions" style="flex-direction: column; gap: 8px; margin-top: 0;">
+        <a id="infoMapLink" href="#" target="_blank" style="display:block; text-align:center; background:#4285f4; color:white; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none;">🗺️ 在 Google Maps 開啟 (看照片)</a>
+        <button class="btn-save" style="width:100%; background:#eee; color:#333;" onclick="document.getElementById('infoModal').style.display='none'">關閉</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const JSONBIN_BIN_ID = '6a9da168da38895dfe4076e7'; 
@@ -378,7 +393,6 @@
       });
     }
 
-    // --- 許願池邏輯 ---
     window.openVoteModal = function(name) {
       const item = pocketDB.find(p => p.name === name);
       if(!item) return;
@@ -414,12 +428,11 @@
         item.wantToGo.push(traveler);
       }
       renderVoteButtons(item);
-      syncWithCloud(); // 儲存至雲端，但不重新整理畫面以保持操作流暢
+      syncWithCloud();
     }
 
     window.closeVoteModal = function() {
       document.getElementById('voteModal').style.display = 'none';
-      // 找出當前是哪一天，重新 render 來顯示新的許願標籤
       let activeIndex = 0;
       document.querySelectorAll('.tab').forEach((tab, idx) => {
         if(tab.classList.contains('active')) activeIndex = idx;
@@ -427,7 +440,6 @@
       renderApp();
       switchTab(activeIndex);
     }
-    // ------------------
 
     window.openDayRegionModal = function(dayIndex) {
       document.getElementById('drDayIndex').value = dayIndex;
@@ -735,15 +747,28 @@
       if(cardElement) cardElement.classList.add('active-card');
     };
 
+    // V18: 彈窗加入外部 Map 連結與許願標籤同步
     window.viewSubItem = function(name, mapQuery) {
       updateMap(mapQuery, null); 
       const item = pocketDB.find(p => p.name === name);
       document.getElementById('infoName').innerText = name;
+      
+      // 更新按鈕的外部 Google Maps 連結
+      document.getElementById('infoMapLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+      
       if (item) {
+        // 渲染許願標籤
+        if (item.wantToGo && item.wantToGo.length > 0) {
+          document.getElementById('infoWantBadge').innerHTML = `<span style="background:#ecc94b; color:#744210; font-size:12px; padding:4px 8px; border-radius:6px; font-weight:bold; display:inline-block;">🙋‍♂️ ${item.wantToGo.join(', ')} 想去</span>`;
+        } else {
+          document.getElementById('infoWantBadge').innerHTML = '';
+        }
+
         document.getElementById('infoTag').innerText = `📍 ${item.region} · ${item.category}`;
         document.getElementById('infoTag').style.display = 'inline-block';
         document.getElementById('infoDesc').innerHTML = linkify(item.desc) || '無備註說明。';
       } else {
+        document.getElementById('infoWantBadge').innerHTML = '';
         document.getElementById('infoTag').style.display = 'none';
         document.getElementById('infoDesc').innerText = '此項目可能是手動輸入，或已從口袋名單中刪除。';
       }
