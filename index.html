@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V20.1 </title>
+  <title>Seoul Trip - V20.2 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -134,7 +134,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V20.1 </p>
+      <p>V20.2 </p>
     </div>
     <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
   </div>
@@ -142,7 +142,6 @@
 
   <div class="split-layout">
     <div class="map-pane">
-      <!-- 修正網址編碼：將 화장실 改為 개방화장실 (%EA%B0%9C%EB%B0%A9%ED%99%94%EC%9E%A5%EC%8B%A4) -->
       <a href="https://map.naver.com/v5/search/%EA%B0%9C%EB%B0%A9%ED%99%94%EC%9E%A5%EC%8B%A4" target="_blank" class="naver-toilet-btn">
         🚻 附近開放公廁 (Naver)
       </a>
@@ -185,6 +184,7 @@
   <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字</label><input type="text" id="pMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
   <div class="modal-overlay" id="blockSelectModal"><div class="modal"><h3 style="margin-top:0;">➕ 選擇區間</h3><p style="font-size:13px; color:#666;">將 <strong id="bsItemName" style="color:var(--primary)"></strong> 加入哪裡？</p><input type="hidden" id="bsDayIndex"><input type="hidden" id="bsItemMapQ"><div class="form-group"><select id="bsBlockSelect"></select></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockSelectModal').style.display='none'">取消</button><button class="btn-save" onclick="confirmAddBlock()">確定</button></div></div></div>
   
+  <!-- 商家資訊 Modal (V20.2 支援 Google Maps + Naver Map 雙開關) -->
   <div class="modal-overlay" id="infoModal">
     <div class="modal">
       <h3 style="margin-top:0; font-size:18px;" id="infoName"></h3>
@@ -192,8 +192,13 @@
       <span id="infoTag" style="display:inline-block; font-size:12px; padding:4px 8px; background:#eee; border-radius:6px; color:#555; margin-bottom:12px; font-weight:bold;"></span>
       <p id="infoDesc" style="font-size:14px; color:#666; line-height:1.6; margin-top:0; margin-bottom:20px;"></p>
       <div class="modal-actions" style="flex-direction: column; gap: 8px; margin-top: 0;">
-        <a id="infoMapLink" href="#" target="_blank" style="display:block; text-align:center; background:#4285f4; color:white; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none;">🗺️ 在 Google Maps 開啟 (看照片)</a>
-        <button class="btn-save" style="width:100%; background:#eee; color:#333;" onclick="document.getElementById('infoModal').style.display='none'">關閉</button>
+        <a id="infoNaverLink" href="#" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:6px; background:#03C75A; color:white; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none;">
+          🟢 在 Naver Map 開啟 (路線導航)
+        </a>
+        <a id="infoMapLink" href="#" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:6px; background:#4285f4; color:white; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none;">
+          🔵 在 Google Maps 開啟 (看照片/評價)
+        </a>
+        <button class="btn-save" style="width:100%; background:#eee; color:#333; margin-top:4px;" onclick="document.getElementById('infoModal').style.display='none'">關閉</button>
       </div>
     </div>
   </div>
@@ -763,7 +768,7 @@
       let region = '其他';
       if (/(島山|dosan)/i.test(text)) region = '島山';
       else if (/(漢南|hannam)/i.test(text)) region = '漢南';
-      else if (/(聖水|首林|seongsu)/i.test(text)) region = '聖水';
+      else if (/(聖水|首爾林|seongsu)/i.test(text)) region = '聖水';
       else if (/(弘大|hongdae)/i.test(text)) region = '弘大';
       else if (/(延南|yeonnam)/i.test(text)) region = '延南';
       else if (/(明洞|myeongdong)/i.test(text)) region = '明洞';
@@ -792,12 +797,15 @@
       if(cardElement) cardElement.classList.add('active-card');
     };
 
+    // V20.2: 彈窗內支援 Google Maps 與 Naver Map 雙連結跳轉
     window.viewSubItem = function(name, mapQuery) {
       updateMap(mapQuery, null); 
       const item = pocketDB.find(p => p.name === name);
       document.getElementById('infoName').innerText = name;
       
-      document.getElementById('infoMapLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+      const searchQuery = mapQuery || name;
+      document.getElementById('infoMapLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
+      document.getElementById('infoNaverLink').href = `https://map.naver.com/v5/search/${encodeURIComponent(searchQuery)}`;
       
       if (item) {
         if (item.wantToGo && item.wantToGo.length > 0) {
