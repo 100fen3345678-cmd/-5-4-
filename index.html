@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V34 </title>
+  <title>Seoul Trip - V35 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -179,7 +179,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V34 </p>
+      <p>V35 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -254,9 +254,14 @@
         </div>
       </div>
 
+      <!-- V35: 匯率輸入區優化，加入手動刷新按鈕與提示字 -->
       <div class="form-group" id="krwRateGroup">
-        <label>當筆換算匯率 (KRW : TWD)</label>
-        <input type="number" id="expRate" value="42" placeholder="42">
+        <label>當筆換算匯率 (KRW : 1 TWD)</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="number" step="0.01" id="expRate" value="42" placeholder="42" style="flex: 1;">
+          <button class="btn-setting" style="height: auto; padding: 0 12px; font-size: 13px;" onclick="applyLiveRate()" type="button">🔄 刷新</button>
+        </div>
+        <div id="rateHint" style="font-size:11px; margin-top:6px;"></div>
       </div>
 
       <div class="form-group">
@@ -417,8 +422,11 @@
     let currentTabIndices = { 0: 'food', 1: 'food', 2: 'food', 3: 'food', 4: 'food' };
     let currentPocketRegion = {}; 
     let tempSelectedRegions = [];
-    let pocketOpenState = {}; // V34 新增：記憶每一天口袋名單的展開狀態
+    let pocketOpenState = {}; 
     const travelers = ["文", "Chris", "CHiLi", "Tony", "Rex", "ShowChen"];
+    
+    // V35: 全域即時匯率變數 (預設42)
+    let liveKrwRate = 42.00;
 
     const tabsContainer = document.getElementById('tabs-container');
     const contentContainer = document.getElementById('content-container');
@@ -442,7 +450,24 @@
       return days;
     }
 
+    // V35: 非同步抓取最新匯率 (使用 CDN Currency API)
+    async function fetchLiveExchangeRate() {
+      try {
+        const res = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/twd.json');
+        const data = await res.json();
+        if (data && data.twd && data.twd.krw) {
+          liveKrwRate = parseFloat(data.twd.krw.toFixed(2));
+          console.log("已成功取得即時匯率: 1 TWD = " + liveKrwRate + " KRW");
+        }
+      } catch (e) {
+        console.warn("無法取得即時匯率，將使用預設值 42", e);
+      }
+    }
+
     async function loadFromCloud() {
+      // 載入資料的同時並行去抓取匯率
+      fetchLiveExchangeRate();
+      
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, { headers: { 'X-Master-Key': JSONBIN_API_KEY } });
         const data = await res.json();
@@ -550,7 +575,6 @@
         });
         regionOptions += `<option value="All_Global" ${currentPocketRegion[dayIndex] === 'All_Global' ? 'selected' : ''}>🌍 全部 (所有店家)</option>`;
 
-        // V34 讀取記憶的展開狀態
         const pocketIsOpen = pocketOpenState[dayIndex] ? 'open' : '';
 
         html += `
@@ -585,7 +609,6 @@
       });
     }
 
-    // V34 升級：切換展開狀態時，寫入記憶體 pocketOpenState
     window.togglePocket = function(dayIndex) {
       const el = document.getElementById(`pocket-content-${dayIndex}`);
       el.classList.toggle('open');
@@ -707,13 +730,32 @@
       }
     }
 
+    // V35: 手動刷新即時匯率
+    window.applyLiveRate = async function() {
+      const btn = event.target;
+      const oldText = btn.innerText;
+      btn.innerText = '⏳';
+      await fetchLiveExchangeRate();
+      document.getElementById('expRate').value = liveKrwRate;
+      const hint = document.getElementById('rateHint');
+      hint.innerHTML = `✅ 已更新為最新匯率：<b>${liveKrwRate}</b>`;
+      hint.style.color = '#16a34a';
+      btn.innerText = oldText;
+    };
+
     window.openExpenseModal = function(defaultTitle = '') {
       document.getElementById('expIndex').value = '';
       document.getElementById('expModalTitle').innerText = '💸 新增代墊花費';
       document.getElementById('expTitle').value = defaultTitle;
       document.getElementById('expCurrency').value = 'KRW';
       document.getElementById('expAmount').value = '';
-      document.getElementById('expRate').value = '42';
+      
+      // 預設帶入即時抓取到的最新匯率
+      document.getElementById('expRate').value = liveKrwRate;
+      const hint = document.getElementById('rateHint');
+      hint.innerHTML = `✅ 已自動帶入今日匯率：<b>${liveKrwRate}</b>`;
+      hint.style.color = '#16a34a';
+      
       toggleCurrencyMode();
       document.getElementById('expPayer').value = '文';
       
@@ -733,7 +775,13 @@
       document.getElementById('expTitle').value = exp.title;
       document.getElementById('expCurrency').value = exp.currency || 'KRW';
       document.getElementById('expAmount').value = exp.amount;
-      document.getElementById('expRate').value = exp.rate || 42;
+      
+      // 編輯時，帶入當時儲存的歷史匯率，並改變提示文字
+      document.getElementById('expRate').value = exp.rate || liveKrwRate;
+      const hint = document.getElementById('rateHint');
+      hint.innerHTML = `💡 此為當時紀錄的匯率`;
+      hint.style.color = '#64748b';
+      
       toggleCurrencyMode();
       document.getElementById('expPayer').value = exp.payer;
       
@@ -1288,7 +1336,6 @@
       document.getElementById('blockSelectModal').style.display = 'flex';
     };
 
-    // V34: 新增項目到區間時，自動強制展開口袋名單，並寫入記憶體
     window.confirmAddBlock = function() {
       const dayIndex = parseInt(document.getElementById('bsDayIndex').value, 10);
       const blockIndex = parseInt(document.getElementById('bsBlockSelect').value, 10);
@@ -1299,7 +1346,7 @@
       });
       syncWithCloud(); document.getElementById('blockSelectModal').style.display = 'none';
       
-      pocketOpenState[dayIndex] = true; // 強制將狀態記為打開
+      pocketOpenState[dayIndex] = true; 
       
       renderApp(); switchTab(dayIndex); 
     };
