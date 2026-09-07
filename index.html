@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V24.1 </title>
+  <title>Seoul Trip - V25 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -14,8 +14,10 @@
     .header-content { flex: 1; text-align: center; }
     .header h1 { margin: 0 0 4px 0; font-size: 20px; }
     .header p { margin: 0; font-size: 13px; opacity: 0.9; }
-    .sync-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
-    .sync-btn:hover { background: rgba(255,255,255,0.3); }
+    
+    .header-btns { display: flex; gap: 8px; align-items: center; }
+    .sync-btn, .expense-toggle-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+    .sync-btn:hover, .expense-toggle-btn:hover { background: rgba(255,255,255,0.3); }
 
     .tabs { display: flex; overflow-x: auto; background: white; position: sticky; top: 60px; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); scrollbar-width: none; }
     .tabs::-webkit-scrollbar { display: none; }
@@ -110,10 +112,27 @@
     .sortable-ghost { opacity: 0.4; background: #ffe3e3 !important; }
     .sortable-drag { opacity: 0.9; transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
 
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    /* V25 側邊記帳抽屜樣式 */
+    .expense-drawer { position: fixed; top: 0; right: -420px; width: 400px; max-width: 100%; height: 100vh; background: white; box-shadow: -5px 0 25px rgba(0,0,0,0.15); z-index: 1200; transition: right 0.3s ease; display: flex; flex-direction: column; }
+    .expense-drawer.open { right: 0; }
+    .drawer-header { background: var(--primary); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .drawer-header h3 { margin: 0; font-size: 18px; }
+    .drawer-close { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+    .drawer-body { flex: 1; overflow-y: auto; padding: 16px; background: #f8fafc; }
+    
+    .expense-card { background: white; border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; position: relative; }
+    .expense-card h4 { margin: 0 0 4px 0; font-size: 15px; color: #1e293b; }
+    .expense-card .meta { font-size: 12px; color: #64748b; margin-bottom: 6px; }
+    .expense-card .amount { font-size: 16px; font-weight: bold; color: var(--primary); }
+    .expense-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; }
+
+    .settlement-box { background: #fffbeb; border: 1px solid #fde047; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .settlement-box h4 { margin: 0 0 8px 0; color: #854d0e; font-size: 15px; }
+    .settlement-instruction { font-size: 13px; color: #713f12; margin-bottom: 4px; font-weight: 600; }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1300; justify-content: center; align-items: center; padding: 20px; }
     .modal { background: white; width: 100%; max-width: 450px; border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; position: relative; }
     
-    /* V24.1 資訊卡專屬編輯按鈕 */
     .info-edit-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 18px; cursor: pointer; color: #aaa; padding: 0; z-index: 10; transition: 0.2s; }
     .info-edit-btn:hover { color: var(--primary); transform: scale(1.1); }
 
@@ -121,6 +140,12 @@
     .form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; font-weight:bold; }
     .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
     
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .checkbox-group label { background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid #cbd5e1; user-select: none; }
+    .checkbox-group input { display: none; }
+    .checkbox-group input:checked + span { color: var(--primary); font-weight: bold; }
+    .checkbox-group label.selected { background: #fee2e2; border-color: var(--primary); color: var(--primary); font-weight: bold; }
+
     .region-checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .region-checkbox-group label { padding: 6px 12px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; margin-bottom: 0; transition: 0.2s; }
     
@@ -146,11 +171,39 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V24.1 </p>
+      <p>V25 </p>
     </div>
-    <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
+    <div class="header-btns">
+      <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
+      <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
+    </div>
   </div>
   <div class="tabs" id="tabs-container"></div>
+
+  <!-- V25 側邊記帳抽屜 -->
+  <div class="expense-drawer" id="expenseDrawer">
+    <div class="drawer-header">
+      <h3>💸 旅遊共編記帳本</h3>
+      <button class="drawer-close" onclick="toggleExpenseDrawer()">×</button>
+    </div>
+    <div class="drawer-body">
+      <!-- 匯率設定與新增按鈕 -->
+      <div style="background: white; padding: 12px; border-radius: 10px; margin-bottom: 16px; border: 1px solid #e2e8f0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 13px; font-weight: bold; color: #555;">匯率 (KRW : TWD)</span>
+          <input type="number" id="exRate" value="42" style="width: 80px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 6px; text-align: center; font-weight: bold;" onchange="renderExpenseDrawer()">
+        </div>
+        <button class="btn-save" style="width: 100%; padding: 10px; font-size: 14px;" onclick="openExpenseModal()">➕ 新增一筆花費</button>
+      </div>
+
+      <!-- 智慧結算指示面板 -->
+      <div id="settlementContainer"></div>
+
+      <!-- 帳目流水記錄 -->
+      <h4 style="margin: 16px 0 8px 0; font-size: 14px; color: #475569;">📜 記帳明細流水帳</h4>
+      <div id="expenseListContainer"></div>
+    </div>
+  </div>
 
   <div class="split-layout">
     <div class="map-pane">
@@ -163,62 +216,62 @@
     <div class="list-pane" id="content-container"></div>
   </div>
 
-  <div class="modal-overlay" id="dayRegionModal">
+  <!-- V25 記帳新增/編輯 Modal -->
+  <div class="modal-overlay" id="expenseModal">
     <div class="modal">
-      <h3 style="margin-top:0;">⚙️ 設定當日目標區域</h3>
-      <input type="hidden" id="drDayIndex">
+      <h3 style="margin-top:0;" id="expModalTitle">💸 新增代墊花費</h3>
+      <input type="hidden" id="expIndex">
       <div class="form-group">
-        <label>當日副標題 (選填)</label>
-        <input type="text" id="drSubtitle" placeholder="例如：逛街與烤肉之夜">
+        <label>代墊項目 / 名稱</label>
+        <input type="text" id="expTitle" placeholder="例如: 弘大烤肉、計程車費...">
       </div>
       <div class="form-group">
-        <label>勾選包含區域 (會依據第一個選項動態顯示距離遠近)</label>
-        <div id="drCheckboxesDynamicArea"></div>
+        <label>代墊金額 (韓元 KRW)</label>
+        <input type="number" id="expAmount" placeholder="例如: 50000">
+      </div>
+      <div class="form-group">
+        <label>誰付錢 (代墊者)</label>
+        <select id="expPayer">
+          <option value="文">文</option>
+          <option value="Chris">Chris</option>
+          <option value="CHiLi">CHiLi</option>
+          <option value="Tony">Tony</option>
+          <option value="Rex">Rex</option>
+          <option value="ShowChen">ShowChen</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>參與拆帳人員 (預設全選)</label>
+        <div class="checkbox-group" id="expParticipants">
+          <label class="selected"><input type="checkbox" value="文" checked onclick="toggleCheckLabel(this)"><span>文</span></label>
+          <label class="selected"><input type="checkbox" value="Chris" checked onclick="toggleCheckLabel(this)"><span>Chris</span></label>
+          <label class="selected"><input type="checkbox" value="CHiLi" checked onclick="toggleCheckLabel(this)"><span>CHiLi</span></label>
+          <label class="selected"><input type="checkbox" value="Tony" checked onclick="toggleCheckLabel(this)"><span>Tony</span></label>
+          <label class="selected"><input type="checkbox" value="Rex" checked onclick="toggleCheckLabel(this)"><span>Rex</span></label>
+          <label class="selected"><input type="checkbox" value="ShowChen" checked onclick="toggleCheckLabel(this)"><span>ShowChen</span></label>
+        </div>
       </div>
       <div class="modal-actions">
-        <button class="btn-cancel" onclick="document.getElementById('dayRegionModal').style.display='none'">取消</button>
-        <button class="btn-save" onclick="saveDayRegions()">儲存設定</button>
+        <button class="btn-cancel" onclick="document.getElementById('expenseModal').style.display='none'">取消</button>
+        <button class="btn-save" onclick="saveExpense()">儲存帳目</button>
       </div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="voteModal">
-    <div class="modal">
-      <h3 style="margin-top:0; font-size:18px;">🙋‍♂️ 誰想去 <strong id="vItemName" style="color:var(--primary)"></strong>？</h3>
-      <input type="hidden" id="vItemNameHidden">
-      <div class="region-checkbox-group" id="voteCheckboxes" style="margin-bottom:12px;"></div>
-      <div class="modal-actions">
-        <button class="btn-save" style="width:100%" onclick="closeVoteModal()">完成</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>Google Map 關鍵字 (維持首頁地圖顯示)</label><input type="text" id="bMapQ" placeholder="輸入關鍵字"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
+  <!-- 其他 Modal -->
+  <div class="modal-overlay" id="dayRegionModal"><div class="modal"><h3 style="margin-top:0;">⚙️ 設定當日目標區域</h3><input type="hidden" id="drDayIndex"><div class="form-group"><label>當日副標題 (選填)</label><input type="text" id="drSubtitle" placeholder="例如：逛街與烤肉之夜"></div><div class="form-group"><label>勾選包含區域 (會依據第一個選項動態顯示距離遠近)</label><div id="drCheckboxesDynamicArea"></div></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('dayRegionModal').style.display='none'">取消</button><button class="btn-save" onclick="saveDayRegions()">儲存設定</button></div></div></div>
+  <div class="modal-overlay" id="voteModal"><div class="modal"><h3 style="margin-top:0; font-size:18px;">🙋‍♂️ 誰想去 <strong id="vItemName" style="color:var(--primary)"></strong>？</h3><input type="hidden" id="vItemNameHidden"><div class="region-checkbox-group" id="voteCheckboxes" style="margin-bottom:12px;"></div><div class="modal-actions"><button class="btn-save" style="width:100%" onclick="closeVoteModal()">完成</button></div></div></div>
+  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="bMapQ" placeholder="輸入關鍵字"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
   
   <div class="modal-overlay" id="pocketModal">
     <div class="modal">
       <h3 style="margin-top:0;" id="pModalTitle">✨ 新增名單</h3>
       <input type="hidden" id="pOriginalName">
-      <div class="form-group">
-        <label>名稱</label>
-        <input type="text" id="pName">
-      </div>
-      <div class="form-group">
-        <label>Google Map 關鍵字 <span style="color:#888;font-weight:normal;">(用來顯示首頁地圖)</span></label>
-        <input type="text" id="pMapQ" placeholder="例如: 弘大 豬肉商會">
-      </div>
-      <div class="form-group">
-        <label>Naver Map 專屬連結 <span style="color:#888;font-weight:normal;">(選填，點擊跳轉直達用)</span></label>
-        <input type="text" id="pNaverLink" placeholder="例如: https://naver.me/...">
-      </div>
-      <div class="form-group">
-        <label>備註 (貼上網址會自動轉換)</label>
-        <textarea id="pDesc" rows="2"></textarea>
-      </div>
-      <div class="form-group">
-        <label>手動修改地區 (可自填新區)</label>
-        <input type="text" id="pRegion" placeholder="例如: 弘大、聖水...">
-      </div>
+      <div class="form-group"><label>名稱</label><input type="text" id="pName"></div>
+      <div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="pMapQ" placeholder="例如: 弘大 豬肉商會"></div>
+      <div class="form-group"><label>Naver Map 專屬連結 (選填)</label><input type="text" id="pNaverLink" placeholder="例如: https://naver.me/..."></div>
+      <div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div>
+      <div class="form-group"><label>手動修改地區 (可自填新區)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div>
       <div class="modal-actions">
         <button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button>
         <button class="btn-save" onclick="saveToPocket()" id="pBtnSave">加入名單</button>
@@ -230,21 +283,15 @@
   
   <div class="modal-overlay" id="infoModal">
     <div class="modal">
-      <!-- V24.1 新增：資訊卡右上角的編輯按鈕 -->
       <button class="info-edit-btn" id="infoEditBtn">✏️</button>
-      
-      <!-- 增加 padding-right 避免標題被編輯按鈕蓋住 -->
       <h3 style="margin-top:0; font-size:18px; padding-right:24px;" id="infoName"></h3>
       <div id="infoWantBadge" style="margin-bottom:8px;"></div>
       <span id="infoTag" style="display:inline-block; font-size:12px; padding:4px 8px; background:#eee; border-radius:6px; color:#555; margin-bottom:12px; font-weight:bold;"></span>
       <p id="infoDesc" style="font-size:14px; color:#666; line-height:1.6; margin-top:0; margin-bottom:20px;"></p>
       <div class="modal-actions" style="flex-direction: column; gap: 8px; margin-top: 0;">
-        <a id="infoNaverLink" href="#" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:6px; background:#03C75A; color:white; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none;">
-          🟢 在 Naver Map 開啟 (路線導航)
-        </a>
-        <a id="infoMapLink" href="#" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:6px; background:#4285f4; color:white; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none;">
-          🔵 在 Google Maps 開啟 (看照片/評價)
-        </a>
+        <button class="btn-save" style="width:100%; background:#8b5cf6;" id="infoExpenseBtn">💸 快速記這筆帳</button>
+        <a id="infoNaverLink" href="#" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:6px; background:#03C75A; color:white; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none;">🟢 在 Naver Map 開啟 (路線導航)</a>
+        <a id="infoMapLink" href="#" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:6px; background:#4285f4; color:white; padding:12px; border-radius:8px; font-weight:bold; text-decoration:none;">🔵 在 Google Maps 開啟 (看照片/評價)</a>
         <button class="btn-save" style="width:100%; background:#eee; color:#333; margin-top:4px;" onclick="document.getElementById('infoModal').style.display='none'">關閉</button>
       </div>
     </div>
@@ -255,77 +302,34 @@
     const JSONBIN_API_KEY = '$2a$10$7PzBRwuMIt9Xl3Xl1b1h/eWFHQUVbxmVKAwrj8A009EU62i2lB6EO';
 
     const koreanDict = {
-      "Slow Brew Pub Yeonnam": "슬로우브루펍",
-      "Please No Follow Yeonnam": "플리즈노팔로우 연남",
-      "MUCENT Hongdae Showroom": "무센트 홍대",
-      "Musinsa Standard Hongdae": "무신사 스탠다드 홍대",
-      "Chaakan Shoes Hongdae": "착한구두 홍대",
-      "DayBeau Clinic Hongdae": "데이뷰의원 홍대",
-      "T1 Base Camp Hongdae": "T1 베이스캠프 홍대",
-      "Mangwon Market": "망원시장",
-      "ADER ERROR SEONGSU": "아더 성수 스페이스",
-      "BLUE ELEPHANT SEONGSU": "블루엘리펀트 성수",
-      "MUSINSA EMPTY SEONGSU": "무신사 엠프티 성수",
-      "MUCENT Seongsu Showroom": "무센트 성수",
-      "BADBLOOD Seongsu Flagship Store": "배드블러드 성수",
-      "ILKW Seoul": "일광전구 성수",
-      "KHIHO SEONGSU": "기호 성수",
-      "MARGESHERWOOD Seoul Flagship Store": "마제셔우드 성수",
-      "Subdued Seoul": "서브듀드 서울",
-      "aeae Seongsu": "aeae 성수",
-      "Brandy Melville Seongsu": "브랜디멜빌 성수",
-      "Cube Entertainment Seongsu": "큐브엔터테인먼트",
-      "29cm Seongsu": "이구성수",
-      "Seoul Forest": "서울숲",
-      "Cafe Onion Seongsu": "어니언 성수",
-      "HAUS DOSAN": "하우스 도산",
-      "Stussy Seoul Dosan": "스투시 서울 챕터",
-      "MUCENT Hannam Flagship": "무센트 한남",
-      "Rest & Recreation Hannam": "레스튼레크리에이션 한남",
-      "The Barnnet Hannam": "더바넷 한남",
-      "GROVE Hannam": "그로브 한남",
-      "Atelier Nain Hannam": "아틀리에 나인 한남",
-      "ROLAROLA Hannam": "롤라롤라 한남",
-      "ason Hannam": "어슨 한남",
-      "MARGESHERWOOD Hannam": "마제셔우드 한남",
-      "Mango Many Please Hannam": "망고매니플리즈 한남",
-      "Glowny Hannam": "글로니 한남",
-      "Haus Aver": "하우스 에버",
-      "Sinoon Dosan": "시눈 도산",
-      "Beaker Hannam": "비이커 한남",
-      "Gen.G Seoul": "젠지 사옥",
-      "T1 Seoul HQ": "T1 사옥",
-      "HYBE INSIGHT": "하이브 사옥",
-      "Jeju Rooftop Black BBQ Seoul": "제주옥탑",
-      "NUDAKE Haus Dosan": "누데이크 하우스 도산",
-      "nyunyu Dongdaemun": "뉴뉴 동대문",
-      "Gyeongbokgung Palace": "경복궁",
-      "Bukchon Hanok Village": "북촌한옥마을",
-      "Cheonggyecheon": "청계천",
-      "Gwangjang Market": "광장시장",
-      "Artist Bakery Anguk": "아티스트베이커리 안국",
-      "Cafe Highwaist Ikseon": "카페 하이웨스트 익선",
-      "Ouvrir Seoul": "우브르",
-      "Cafe Layered Bukchon": "카페 레이어드 북촌",
-      "Shinsegae Duty Free Myeongdong": "신세계면세점 명동점",
-      "nyunyu Myeongdong": "뉴뉴 명동",
-      "Yeouido Hangang Park": "여의도 한강공원",
-      "N Seoul Tower": "N서울타워",
-      "Matin Kim Myeongdong": "마뗑킴 명동",
-      "Musinsa Standard Myeongdong": "무신사 스탠다드 명동",
-      "Ralph Lauren Seoul": "랄프로렌 칠드런",
-      "Stereophonic Sound Seoul": "스테레오포닉사운드",
-      "Donggyo-ro 47-gil Mapo-gu, Seoul": "서울 마포구 동교로 47길",
-      "Incheon International Airport": "인천국제공항",
-      "Hongik University Station": "홍대입구역",
-      "Yeonnam-dong Seoul": "연남동",
-      "Hongdae Seoul": "홍대",
-      "Hannam-dong Seoul": "한남동",
-      "Seongsu-dong Seoul": "성수동",
-      "Anguk Station": "안국역",
-      "Euljiro 3-ga Station": "을지로3가역",
-      "Dongdaemun Seoul": "동대문",
-      "Myeongdong Seoul": "명동"
+      "Slow Brew Pub Yeonnam": "슬로우브루펍", "Please No Follow Yeonnam": "플리즈노팔로우 연남",
+      "MUCENT Hongdae Showroom": "무센트 홍대", "Musinsa Standard Hongdae": "무신사 스탠다드 홍대",
+      "Chaakan Shoes Hongdae": "착한구두 홍대", "DayBeau Clinic Hongdae": "데이뷰의원 홍대",
+      "T1 Base Camp Hongdae": "T1 베이스캠프 홍대", "Mangwon Market": "망원시장",
+      "ADER ERROR SEONGSU": "아더 성수 스페이스", "BLUE ELEPHANT SEONGSU": "블루엘리펀트 성수",
+      "MUSINSA EMPTY SEONGSU": "무신사 엠프티 성수", "MUCENT Seongsu Showroom": "무센트 성수",
+      "BADBLOOD Seongsu Flagship Store": "배드블러드 성수", "ILKW Seoul": "일광전구 성수",
+      "KHIHO SEONGSU": "기호 성수", "MARGESHERWOOD Seoul Flagship Store": "마제셔우드 성수",
+      "Subdued Seoul": "서브듀드 서울", "aeae Seongsu": "aeae 성수", "Brandy Melville Seongsu": "브랜디멜빌 성수",
+      "Cube Entertainment Seongsu": "큐브엔터테인먼트", "29cm Seongsu": "이구성수", "Seoul Forest": "서울숲",
+      "Cafe Onion Seongsu": "어니언 성수", "HAUS DOSAN": "하우스 도산", "Stussy Seoul Dosan": "스투시 서울 챕터",
+      "MUCENT Hannam Flagship": "무센트 한남", "Rest & Recreation Hannam": "레스튼레크리에이션 한남",
+      "The Barnnet Hannam": "더바넷 한남", "GROVE Hannam": "그로브 한남", "Atelier Nain Hannam": "아틀리에 나인 한남",
+      "ROLAROLA Hannam": "롤라롤라 한남", "ason Hannam": "어슨 한남", "MARGESHERWOOD Hannam": "마제셔우드 한남",
+      "Mango Many Please Hannam": "망고매니플리즈 한남", "Glowny Hannam": "글로니 한남", "Haus Aver": "하우스 에버",
+      "Sinoon Dosan": "시눈 도산", "Beaker Hannam": "비이커 한남", "Gen.G Seoul": "젠지 사옥",
+      "T1 Seoul HQ": "T1 사옥", "HYBE INSIGHT": "하이브 사옥", "Jeju Rooftop Black BBQ Seoul": "제주옥탑",
+      "NUDAKE Haus Dosan": "누데이크 하우스 도산", "nyunyu Dongdaemun": "뉴뉴 동대문", "Gyeongbokgung Palace": "경복궁",
+      "Bukchon Hanok Village": "북촌한옥마을", "Cheonggyecheon": "청계천", "Gwangjang Market": "광장시장",
+      "Artist Bakery Anguk": "아티스트베이커리 안국", "Cafe Highwaist Ikseon": "카페 하이웨스트 익선",
+      "Ouvrir Seoul": "우브르", "Cafe Layered Bukchon": "카페 레이어드 북촌", "Shinsegae Duty Free Myeongdong": "신세계면세점 명동점",
+      "nyunyu Myeongdong": "뉴뉴 명동", "Yeouido Hangang Park": "여의도 한강공원", "N Seoul Tower": "N서울타워",
+      "Matin Kim Myeongdong": "마뗑킴 명동", "Musinsa Standard Myeongdong": "무신사 스탠다드 명동",
+      "Ralph Lauren Seoul": "랄프로렌 칠드런", "Stereophonic Sound Seoul": "스테레오포닉사운드",
+      "Donggyo-ro 47-gil Mapo-gu, Seoul": "서울 마포구 동교로 47길", "Incheon International Airport": "인천국제공항",
+      "Hongik University Station": "홍대입구역", "Yeonnam-dong Seoul": "연남동", "Hongdae Seoul": "홍대",
+      "Hannam-dong Seoul": "한남동", "Seongsu-dong Seoul": "성수동", "Anguk Station": "안국역",
+      "Euljiro 3-ga Station": "을지로3가역", "Dongdaemun Seoul": "동대문", "Myeongdong Seoul": "명동"
     };
 
     window.linkify = function(text) {
@@ -351,9 +355,11 @@
 
     let appData = [];
     let pocketDB = [];
+    let expensesDB = []; // V25 獨立記帳資料庫
     let currentTabIndices = { 0: 'food', 1: 'food', 2: 'food', 3: 'food', 4: 'food' };
     let currentPocketRegion = {}; 
     let tempSelectedRegions = [];
+    const travelers = ["文", "Chris", "CHiLi", "Tony", "Rex", "ShowChen"];
 
     const tabsContainer = document.getElementById('tabs-container');
     const contentContainer = document.getElementById('content-container');
@@ -382,11 +388,13 @@
         const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, { headers: { 'X-Master-Key': JSONBIN_API_KEY } });
         const data = await res.json();
         if (data && data.record) {
-          appData = data.record.appData; 
-          pocketDB = data.record.pocketDB;
+          appData = data.record.appData || []; 
+          pocketDB = data.record.pocketDB || [];
+          expensesDB = data.record.expensesDB || [];
         }
       } catch (e) { console.error('載入失敗', e); }
       renderApp();
+      renderExpenseDrawer();
     }
 
     async function syncWithCloud() {
@@ -395,7 +403,7 @@
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify({ appData, pocketDB })
+          body: JSON.stringify({ appData, pocketDB, expensesDB })
         });
       } catch (e) { console.error('同步錯誤', e); }
       document.querySelector('.sync-btn').innerText = '🔄 同步最新';
@@ -460,6 +468,7 @@
               </div>
               ${subItemsHtml}
               <div class="action-btns">
+                <button class="btn-small" style="background:#8b5cf6; color:white;" onclick="event.stopPropagation(); openExpenseModal('${safeTitle}')">💸 記帳</button>
                 <button class="btn-small" onclick="event.stopPropagation(); openBlockModal(${dayIndex}, ${evIndex})">編輯</button>
                 <button class="btn-small danger" onclick="event.stopPropagation(); deleteEvent(${dayIndex}, ${evIndex})">刪除</button>
               </div>
@@ -558,6 +567,176 @@
       }
     }
 
+    // V25 側邊記帳抽屜控制
+    function toggleExpenseDrawer() {
+      document.getElementById('expenseDrawer').classList.toggle('open');
+    }
+
+    function toggleCheckLabel(checkbox) {
+      if (checkbox.checked) {
+        checkbox.parentElement.classList.add('selected');
+      } else {
+        checkbox.parentElement.classList.remove('selected');
+      }
+    }
+
+    window.openExpenseModal = function(defaultTitle = '') {
+      document.getElementById('expIndex').value = '';
+      document.getElementById('expModalTitle').innerText = '💸 新增代墊花費';
+      document.getElementById('expTitle').value = defaultTitle;
+      document.getElementById('expAmount').value = '';
+      document.getElementById('expPayer').value = '文';
+      
+      const container = document.getElementById('expParticipants');
+      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = true;
+        cb.parentElement.classList.add('selected');
+      });
+      document.getElementById('expenseModal').style.display = 'flex';
+    };
+
+    window.openEditExpenseModal = function(index) {
+      const exp = expensesDB[index];
+      if(!exp) return;
+      document.getElementById('expIndex').value = index;
+      document.getElementById('expModalTitle').innerText = '✏️ 編輯代墊花費';
+      document.getElementById('expTitle').value = exp.title;
+      document.getElementById('expAmount').value = exp.amount;
+      document.getElementById('expPayer').value = exp.payer;
+      
+      const container = document.getElementById('expParticipants');
+      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        if (exp.participants.includes(cb.value)) {
+          cb.checked = true;
+          cb.parentElement.classList.add('selected');
+        } else {
+          cb.checked = false;
+          cb.parentElement.classList.remove('selected');
+        }
+      });
+      document.getElementById('expenseModal').style.display = 'flex';
+    };
+
+    window.saveExpense = function() {
+      const index = document.getElementById('expIndex').value;
+      const title = document.getElementById('expTitle').value.trim();
+      const amount = parseFloat(document.getElementById('expAmount').value);
+      const payer = document.getElementById('expPayer').value;
+      
+      const participants = [];
+      document.querySelectorAll('#expParticipants input[type="checkbox"]:checked').forEach(cb => {
+        participants.push(cb.value);
+      });
+
+      if(!title) return alert("請輸入代墊項目名稱！");
+      if(isNaN(amount) || amount <= 0) return alert("請輸入有效的金額！");
+      if(participants.length === 0) return alert("請至少選擇一位參與拆帳人員！");
+
+      const expenseData = { title, amount, payer, participants };
+
+      if (index !== '') {
+        expensesDB[index] = expenseData;
+      } else {
+        expensesDB.push(expenseData);
+      }
+
+      syncWithCloud();
+      document.getElementById('expenseModal').style.display = 'none';
+      renderExpenseDrawer();
+    };
+
+    window.deleteExpense = function(index) {
+      if(confirm("確定要刪除這筆記帳嗎？")) {
+        expensesDB.splice(index, 1);
+        syncWithCloud();
+        renderExpenseDrawer();
+      }
+    };
+
+    // 核心拆帳與最低轉帳次數演算法
+    function renderExpenseDrawer() {
+      const rate = parseFloat(document.getElementById('exRate').value) || 42;
+      const listContainer = document.getElementById('expenseListContainer');
+      const settlementContainer = document.getElementById('settlementContainer');
+
+      let html = '';
+      if (expensesDB.length === 0) {
+        listContainer.innerHTML = `<p style="color: #888; font-size: 13px; text-align: center;">目前還沒有任何記帳資料！</p>`;
+        settlementContainer.innerHTML = '';
+        return;
+      }
+
+      // 1. 渲染流水帳
+      expensesDB.forEach((exp, idx) => {
+        const twd = Math.round(exp.amount / rate);
+        html += `
+          <div class="expense-card">
+            <div class="expense-actions">
+              <button class="btn-small" onclick="openEditExpenseModal(${idx})">✏️</button>
+              <button class="btn-small danger" onclick="deleteExpense(${idx})">🗑️</button>
+            </div>
+            <h4>${exp.title}</h4>
+            <div class="meta">付費者: <b>${exp.payer}</b> | 參與人: ${exp.participants.join(', ')}</div>
+            <div class="amount">₩ ${exp.amount.toLocaleString()} <span style="font-size:12px; font-weight:normal; color:#64748b;">(約 NT$ ${twd.toLocaleString()})</span></div>
+          </div>`;
+      });
+      listContainer.innerHTML = html;
+
+      // 2. 計算各成員淨餘額 (Net Balances)
+      let balances = {};
+      travelers.forEach(t => balances[t] = 0);
+
+      expensesDB.forEach(exp => {
+        const share = exp.amount / exp.participants.length;
+        balances[exp.payer] += exp.amount; // 代墊者墊了全額，總資產增加
+        exp.participants.forEach(p => {
+          balances[p] -= share; // 參與者應付分攤額，餘額減少
+        });
+      });
+
+      // 3. 最低轉帳次數演算法 (Debt Simplification)
+      let debtors = []; // 欠錢的人 (淨餘額為負)
+      let creditors = []; // 應收錢的人 (淨餘額為正)
+
+      travelers.forEach(t => {
+        let net = Math.round(balances[t]);
+        if (net < -1) debtors.push({ name: t, amount: -net });
+        else if (net > 1) creditors.push({ name: t, amount: net });
+      });
+
+      // 排序以優化配對
+      debtors.sort((a, b) => b.amount - a.amount);
+      creditors.sort((a, b) => b.amount - a.amount);
+
+      let transactions = [];
+      let d = 0, c = 0;
+      while (d < debtors.length && c < creditors.length) {
+        let payAmount = Math.min(debtors[d].amount, creditors[c].amount);
+        let twdPay = Math.round(payAmount / rate);
+        
+        transactions.push(`<b>${debtors[d].name}</b> 轉帳給 <b>${creditors[c].name}</b> : ₩ ${payAmount.toLocaleString()} <span style="color:#64748b; font-weight:normal;">(約 NT$ ${twdPay.toLocaleString()})</span>`);
+        
+        debtors[d].amount -= payAmount;
+        creditors[c].amount -= payAmount;
+        
+        if (debtors[d].amount === 0) d++;
+        if (creditors[c].amount === 0) c++;
+      }
+
+      let settleHtml = `
+        <div class="settlement-box">
+          <h4>💡 智慧結算 (最低轉帳次數建議)</h4>`;
+      if (transactions.length === 0) {
+        settlementHtml += `<div class="settlement-instruction" style="color:#166534;">目前大家互不相欠，完美平手！</div>`;
+      } else {
+        transactions.forEach(t => {
+          settleHtml += `<div class="settlement-instruction">👉 ${t}</div>`;
+        });
+      }
+      settleHtml += `</div>`;
+      settlementContainer.innerHTML = settleHtml;
+    }
+
     window.openVoteModal = function(name) {
       const item = pocketDB.find(p => p.name === name);
       if(!item) return;
@@ -569,7 +748,6 @@
     }
 
     window.renderVoteButtons = function(item) {
-      const travelers = ["文", "Chris", "CHiLi", "Tony", "Rex", "ShowChen"];
       const container = document.getElementById('voteCheckboxes');
       let html = '';
       travelers.forEach(t => {
@@ -631,9 +809,7 @@
       if (tempSelectedRegions.length === 0) {
         let html = '<div class="region-checkbox-group">';
         allRegions.forEach(r => {
-          html += `<label style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;" onclick="toggleDynamicRegion('${r}')">
-                     <span>${r}</span>
-                   </label>`;
+          html += `<label style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;" onclick="toggleDynamicRegion('${r}')"><span>${r}</span></label>`;
         });
         html += '</div>';
         container.innerHTML = html;
@@ -641,21 +817,15 @@
       }
 
       const origin = tempSelectedRegions[0];
-      let html = '';
-      
-      html += `<div style="font-size: 12px; color: #333; margin-bottom: 6px; font-weight: bold; margin-top: 4px;">✅ 已選區域 (依『${origin}』為基準計算距離)</div>`;
+      let html = `<div style="font-size: 12px; color: #333; margin-bottom: 6px; font-weight: bold; margin-top: 4px;">✅ 已選區域 (依『${origin}』為基準計算距離)</div>`;
       html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
       tempSelectedRegions.forEach(r => {
-        html += `<label style="background: var(--primary); color: white; border: 1px solid var(--primary);" onclick="toggleDynamicRegion('${r}')">
-                   <span style="font-weight:bold;">${r}</span>
-                 </label>`;
+        html += `<label style="background: var(--primary); color: white; border: 1px solid var(--primary);" onclick="toggleDynamicRegion('${r}')"><span style="font-weight:bold;">${r}</span></label>`;
       });
       html += '</div>';
 
       let unselected = allRegions.filter(r => !tempSelectedRegions.includes(r));
-      let mapped = unselected.map(r => {
-        return { name: r, dist: getDistance(origin, r) };
-      });
+      let mapped = unselected.map(r => ({ name: r, dist: getDistance(origin, r) }));
       mapped.sort((a, b) => a.dist - b.dist);
 
       let nearby = mapped.filter(m => m.dist < 15);
@@ -666,47 +836,21 @@
       if (nearby.length > 0) {
         html += '<div style="font-size: 12px; color: #166534; margin-bottom: 6px; font-weight: bold;">🟢 相鄰區域 (極近)</div>';
         html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-        nearby.forEach(m => {
-          html += `<label style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;" onclick="toggleDynamicRegion('${m.name}')">
-                     <span>${m.name}</span>
-                   </label>`;
-        });
+        nearby.forEach(m => { html += `<label style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
         html += '</div>';
       }
-
       if (medium.length > 0) {
         html += '<div style="font-size: 12px; color: #854d0e; margin-bottom: 6px; font-weight: bold;">🟡 中距離區域 (需搭車)</div>';
         html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-        medium.forEach(m => {
-          html += `<label style="background: #fef9c3; color: #854d0e; border: 1px solid #fef08a;" onclick="toggleDynamicRegion('${m.name}')">
-                     <span>${m.name}</span>
-                   </label>`;
-        });
+        medium.forEach(m => { html += `<label style="background: #fef9c3; color: #854d0e; border: 1px solid #fef08a;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
         html += '</div>';
       }
-
       if (far.length > 0) {
         html += '<div style="font-size: 12px; color: #991b1b; margin-bottom: 6px; font-weight: bold;">🔴 較遠區域 (跨越半個首爾)</div>';
         html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-        far.forEach(m => {
-          html += `<label style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;" onclick="toggleDynamicRegion('${m.name}')">
-                     <span>${m.name}</span>
-                   </label>`;
-        });
+        far.forEach(m => { html += `<label style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
         html += '</div>';
       }
-
-      if (unknown.length > 0) {
-        html += '<div style="font-size: 12px; color: #475569; margin-bottom: 6px; font-weight: bold;">⚪ 其他/自訂區域</div>';
-        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-        unknown.forEach(m => {
-          html += `<label style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;" onclick="toggleDynamicRegion('${m.name}')">
-                     <span>${m.name}</span>
-                   </label>`;
-        });
-        html += '</div>';
-      }
-
       container.innerHTML = html;
     };
 
@@ -714,11 +858,7 @@
       const dayIndex = document.getElementById('drDayIndex').value;
       appData[dayIndex].subtitle = document.getElementById('drSubtitle').value;
       appData[dayIndex].regions = tempSelectedRegions;
-      
-      if(currentPocketRegion[dayIndex] !== 'All_Global') {
-        currentPocketRegion[dayIndex] = 'All'; 
-      }
-      
+      if(currentPocketRegion[dayIndex] !== 'All_Global') currentPocketRegion[dayIndex] = 'All'; 
       syncWithCloud();
       document.getElementById('dayRegionModal').style.display = 'none';
       renderApp(); switchTab(dayIndex);
@@ -785,13 +925,9 @@
       const dayRegions = appData[dayIndex].regions || [];
       
       let baseFiltered = pocketDB.filter(item => item.type === type);
-      
-      if (selectedFilter === 'All_Global') {
-      } else if (selectedFilter === 'All') {
-        baseFiltered = baseFiltered.filter(item => dayRegions.includes(item.region));
-      } else {
-        baseFiltered = baseFiltered.filter(item => item.region === selectedFilter);
-      }
+      if (selectedFilter === 'All_Global') {} 
+      else if (selectedFilter === 'All') { baseFiltered = baseFiltered.filter(item => dayRegions.includes(item.region)); } 
+      else { baseFiltered = baseFiltered.filter(item => item.region === selectedFilter); }
       
       if(baseFiltered.length === 0) {
         filtersEl.innerHTML = '';
@@ -838,6 +974,7 @@
             <h4>${item.name}</h4><span class="cat-tag">${item.region} · ${item.category}</span>
             <p>${linkify(item.desc)}</p>
             <div style="position:absolute; bottom:12px; right:12px; display:flex; gap:6px; z-index:2;">
+              <button class="btn-small" style="background:#8b5cf6; color:white;" onclick="event.stopPropagation(); openExpenseModal('${safeName}')">💸 記帳</button>
               <button class="btn-small" style="background:#fef08a; color:#854d0e; border:1px solid #fde047;" onclick="event.stopPropagation(); openVoteModal('${safeName}')">🙋‍♂️ 想去</button>
               <button class="btn-small" style="background:var(--primary); color:white;" onclick="event.stopPropagation(); openBlockSelectModal(${dayIndex}, '${safeName}', '${safeQuery}')">➕ 加入</button>
             </div>
@@ -977,19 +1114,23 @@
       const item = pocketDB.find(p => p.name === name);
       document.getElementById('infoName').innerText = name;
       
-      // V24.1 核心邏輯：判斷是否顯示編輯按鈕
       if (item) {
         document.getElementById('infoEditBtn').style.display = 'block';
         document.getElementById('infoEditBtn').onclick = function() {
           document.getElementById('infoModal').style.display = 'none';
           openEditPocketModal(name);
         };
+        document.getElementById('infoExpenseBtn').style.display = 'block';
+        document.getElementById('infoExpenseBtn').onclick = function() {
+          document.getElementById('infoModal').style.display = 'none';
+          openExpenseModal(name);
+        };
       } else {
         document.getElementById('infoEditBtn').style.display = 'none';
+        document.getElementById('infoExpenseBtn').style.display = 'none';
       }
 
       const searchQuery = mapQuery || name;
-      
       document.getElementById('infoMapLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
       
       if (item && item.naverLink && item.naverLink.startsWith('http')) {
