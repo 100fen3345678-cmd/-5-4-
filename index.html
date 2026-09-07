@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V35 </title>
+  <title>Seoul Trip - V36 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -148,12 +148,6 @@
     .form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; font-weight:bold; }
     .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
     
-    .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-    .checkbox-group label { background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid #cbd5e1; user-select: none; }
-    .checkbox-group input { display: none; }
-    .checkbox-group input:checked + span { color: var(--primary); font-weight: bold; }
-    .checkbox-group label.selected { background: #fee2e2; border-color: var(--primary); color: var(--primary); font-weight: bold; }
-
     .region-checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .region-checkbox-group label { padding: 6px 12px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; margin-bottom: 0; transition: 0.2s; }
     
@@ -179,7 +173,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V35 </p>
+      <p>V36 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -194,6 +188,21 @@
       <button class="drawer-close" onclick="toggleExpenseDrawer()">×</button>
     </div>
     <div class="drawer-body">
+      
+      <!-- V36 個人專屬視角切換器 -->
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; background: #e0f2fe; padding: 10px 12px; border-radius: 8px; border: 1px solid #bae6fd;">
+        <span style="font-size:13px; font-weight:bold; color:#0369a1;">👤 專屬視角：</span>
+        <select id="personalViewSelect" onchange="renderExpenseDrawer()" style="padding:6px; border-radius:6px; border: 1px solid #7dd3fc; font-size:13px; flex:1; font-weight:bold; color:#0c4a6e; background:#f0f9ff;">
+          <option value="All">🌍 全體總覽 (Minimum Transfers)</option>
+          <option value="文">文 (Wen)</option>
+          <option value="Chris">Chris</option>
+          <option value="CHiLi">CHiLi</option>
+          <option value="Tony">Tony</option>
+          <option value="Rex">Rex</option>
+          <option value="ShowChen">ShowChen</option>
+        </select>
+      </div>
+
       <div style="background: white; padding: 12px; border-radius: 10px; margin-bottom: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px;">
         <button class="btn-save" style="width: 100%; padding: 10px; font-size: 14px;" onclick="openExpenseModal()">➕ 新增一筆花費</button>
         <button class="btn-cancel" style="width: 100%; padding: 8px; font-size: 13px; background: #e2e8f0; color: #334155;" onclick="archiveCurrentPhase()">✨ 結算目前階段並清空重設</button>
@@ -201,7 +210,7 @@
 
       <div id="settlementContainer"></div>
 
-      <h4 style="margin: 16px 0 8px 0; font-size: 14px; color: #475569;">📜 當前未結算流水帳</h4>
+      <h4 style="margin: 16px 0 8px 0; font-size: 14px; color: #475569;" id="expenseListTitle">📜 當前未結算流水帳</h4>
       <div id="expenseListContainer"></div>
 
       <div id="archivedPhasesContainer" style="margin-top: 24px;"></div>
@@ -254,7 +263,6 @@
         </div>
       </div>
 
-      <!-- V35: 匯率輸入區優化，加入手動刷新按鈕與提示字 -->
       <div class="form-group" id="krwRateGroup">
         <label>當筆換算匯率 (KRW : 1 TWD)</label>
         <div style="display: flex; gap: 8px;">
@@ -275,17 +283,15 @@
           <option value="ShowChen">ShowChen</option>
         </select>
       </div>
+      
+      <!-- V36 拆帳權重比例設定區 -->
       <div class="form-group">
-        <label>參與拆帳人員 (預設全選)</label>
-        <div class="checkbox-group" id="expParticipants">
-          <label class="selected"><input type="checkbox" value="文" checked onclick="toggleCheckLabel(this)"><span>文</span></label>
-          <label class="selected"><input type="checkbox" value="Chris" checked onclick="toggleCheckLabel(this)"><span>Chris</span></label>
-          <label class="selected"><input type="checkbox" value="CHiLi" checked onclick="toggleCheckLabel(this)"><span>CHiLi</span></label>
-          <label class="selected"><input type="checkbox" value="Tony" checked onclick="toggleCheckLabel(this)"><span>Tony</span></label>
-          <label class="selected"><input type="checkbox" value="Rex" checked onclick="toggleCheckLabel(this)"><span>Rex</span></label>
-          <label class="selected"><input type="checkbox" value="ShowChen" checked onclick="toggleCheckLabel(this)"><span>ShowChen</span></label>
+        <label>參與拆帳人員與權重 (未勾選即不參與)</label>
+        <div id="expParticipantsList" style="display: flex; flex-direction: column; max-height: 250px; overflow-y: auto; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <!-- JS 動態產生打勾與份數輸入框 -->
         </div>
       </div>
+
       <div class="modal-actions">
         <button class="btn-cancel" onclick="document.getElementById('expenseModal').style.display='none'">取消</button>
         <button class="btn-save" onclick="saveExpense()">儲存帳目</button>
@@ -425,7 +431,6 @@
     let pocketOpenState = {}; 
     const travelers = ["文", "Chris", "CHiLi", "Tony", "Rex", "ShowChen"];
     
-    // V35: 全域即時匯率變數 (預設42)
     let liveKrwRate = 42.00;
 
     const tabsContainer = document.getElementById('tabs-container');
@@ -450,7 +455,6 @@
       return days;
     }
 
-    // V35: 非同步抓取最新匯率 (使用 CDN Currency API)
     async function fetchLiveExchangeRate() {
       try {
         const res = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/twd.json');
@@ -465,9 +469,7 @@
     }
 
     async function loadFromCloud() {
-      // 載入資料的同時並行去抓取匯率
       fetchLiveExchangeRate();
-      
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, { headers: { 'X-Master-Key': JSONBIN_API_KEY } });
         const data = await res.json();
@@ -712,14 +714,6 @@
       document.getElementById('expenseDrawer').classList.toggle('open');
     }
 
-    function toggleCheckLabel(checkbox) {
-      if (checkbox.checked) {
-        checkbox.parentElement.classList.add('selected');
-      } else {
-        checkbox.parentElement.classList.remove('selected');
-      }
-    }
-
     function toggleCurrencyMode() {
       const cur = document.getElementById('expCurrency').value;
       const rateGroup = document.getElementById('krwRateGroup');
@@ -730,7 +724,6 @@
       }
     }
 
-    // V35: 手動刷新即時匯率
     window.applyLiveRate = async function() {
       const btn = event.target;
       const oldText = btn.innerText;
@@ -743,6 +736,71 @@
       btn.innerText = oldText;
     };
 
+    // V36: 產生參與人員與份數調整列表
+    function renderParticipantList(selectedData = null) {
+      const container = document.getElementById('expParticipantsList');
+      let html = '';
+      travelers.forEach(t => {
+        let isChecked = true;
+        let weight = 1;
+        if (selectedData) {
+           const found = selectedData.find(p => (typeof p === 'string' ? p : p.name) === t);
+           if (found) {
+             isChecked = true;
+             weight = typeof found === 'object' ? found.weight : 1;
+           } else {
+             isChecked = false;
+           }
+        }
+        
+        const bgColor = isChecked ? '#e0f2fe' : '#f1f5f9';
+        const borderColor = isChecked ? '#bae6fd' : '#e2e8f0';
+        const textColor = isChecked ? 'var(--primary)' : '#475569';
+        const ctrlOpacity = isChecked ? '1' : '0.4';
+        const ctrlEvents = isChecked ? 'auto' : 'none';
+
+        html += `
+          <div style="display:flex; align-items:center; justify-content:space-between; background:${bgColor}; padding:8px 12px; border-radius:8px; margin-bottom:6px; border:1px solid ${borderColor}; transition:0.2s;" id="row-${t}">
+            <label style="display:flex; align-items:center; gap:8px; margin:0; cursor:pointer; flex:1;">
+              <input type="checkbox" value="${t}" ${isChecked ? 'checked' : ''} onchange="toggleWeightRow('${t}', this)">
+              <span style="font-weight:${isChecked ? 'bold' : 'normal'}; color:${textColor}; font-size:14px;" id="name-${t}">${t}</span>
+            </label>
+            <div style="display:flex; align-items:center; gap:6px; opacity:${ctrlOpacity}; pointer-events:${ctrlEvents};" id="weight-ctrl-${t}">
+              <button type="button" style="background:#fff; border:1px solid #ccc; border-radius:4px; width:26px; height:26px; cursor:pointer; font-weight:bold; color:#555;" onclick="changeWeight('${t}', -0.5)">-</button>
+              <input type="number" id="weight-${t}" value="${weight}" step="0.5" min="0.5" style="width:45px; text-align:center; border:1px solid #ccc; border-radius:4px; height:26px; font-size:14px; font-weight:bold; color:var(--primary);" onchange="updateWeightUI('${t}')">
+              <button type="button" style="background:#fff; border:1px solid #ccc; border-radius:4px; width:26px; height:26px; cursor:pointer; font-weight:bold; color:#555;" onclick="changeWeight('${t}', 0.5)">+</button>
+              <span style="font-size:12px; color:#64748b; font-weight:bold;">份</span>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // V36: 切換參與人員勾選狀態連動樣式
+    window.toggleWeightRow = function(name, checkbox) {
+      const row = document.getElementById(`row-${name}`);
+      const ctrl = document.getElementById(`weight-ctrl-${name}`);
+      const text = document.getElementById(`name-${name}`);
+      if (checkbox.checked) {
+        row.style.background = '#e0f2fe'; row.style.borderColor = '#bae6fd';
+        text.style.color = 'var(--primary)'; text.style.fontWeight = 'bold';
+        ctrl.style.opacity = '1'; ctrl.style.pointerEvents = 'auto';
+      } else {
+        row.style.background = '#f1f5f9'; row.style.borderColor = '#e2e8f0';
+        text.style.color = '#475569'; text.style.fontWeight = 'normal';
+        ctrl.style.opacity = '0.4'; ctrl.style.pointerEvents = 'none';
+      }
+    };
+
+    window.changeWeight = function(name, delta) {
+      const input = document.getElementById(`weight-${name}`);
+      let val = parseFloat(input.value) || 1;
+      val += delta;
+      if (val < 0.5) val = 0.5;
+      input.value = val;
+    };
+
     window.openExpenseModal = function(defaultTitle = '') {
       document.getElementById('expIndex').value = '';
       document.getElementById('expModalTitle').innerText = '💸 新增代墊花費';
@@ -750,7 +808,6 @@
       document.getElementById('expCurrency').value = 'KRW';
       document.getElementById('expAmount').value = '';
       
-      // 預設帶入即時抓取到的最新匯率
       document.getElementById('expRate').value = liveKrwRate;
       const hint = document.getElementById('rateHint');
       hint.innerHTML = `✅ 已自動帶入今日匯率：<b>${liveKrwRate}</b>`;
@@ -759,11 +816,7 @@
       toggleCurrencyMode();
       document.getElementById('expPayer').value = '文';
       
-      const container = document.getElementById('expParticipants');
-      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-        cb.checked = true;
-        cb.parentElement.classList.add('selected');
-      });
+      renderParticipantList(null); // 預設全選
       document.getElementById('expenseModal').style.display = 'flex';
     };
 
@@ -776,7 +829,6 @@
       document.getElementById('expCurrency').value = exp.currency || 'KRW';
       document.getElementById('expAmount').value = exp.amount;
       
-      // 編輯時，帶入當時儲存的歷史匯率，並改變提示文字
       document.getElementById('expRate').value = exp.rate || liveKrwRate;
       const hint = document.getElementById('rateHint');
       hint.innerHTML = `💡 此為當時紀錄的匯率`;
@@ -785,16 +837,7 @@
       toggleCurrencyMode();
       document.getElementById('expPayer').value = exp.payer;
       
-      const container = document.getElementById('expParticipants');
-      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-        if (exp.participants.includes(cb.value)) {
-          cb.checked = true;
-          cb.parentElement.classList.add('selected');
-        } else {
-          cb.checked = false;
-          cb.parentElement.classList.remove('selected');
-        }
-      });
+      renderParticipantList(exp.participants);
       document.getElementById('expenseModal').style.display = 'flex';
     };
 
@@ -807,8 +850,9 @@
       const payer = document.getElementById('expPayer').value;
       
       const participants = [];
-      document.querySelectorAll('#expParticipants input[type="checkbox"]:checked').forEach(cb => {
-        participants.push(cb.value);
+      document.querySelectorAll('#expParticipantsList input[type="checkbox"]:checked').forEach(cb => {
+        const w = parseFloat(document.getElementById(`weight-${cb.value}`).value) || 1;
+        participants.push({ name: cb.value, weight: w });
       });
 
       if(!title) return alert("請輸入代墊項目名稱！");
@@ -881,43 +925,23 @@
       }
     };
 
+    // V36: 重新渲染記帳抽屜 (加入份數相容與個人專屬視角)
     function renderExpenseDrawer() {
       const listContainer = document.getElementById('expenseListContainer');
       const settlementContainer = document.getElementById('settlementContainer');
       const archivedContainer = document.getElementById('archivedPhasesContainer');
-
-      let html = '';
-      if (expensesDB.length === 0) {
-        listContainer.innerHTML = `<p style="color: #888; font-size: 13px; text-align: center;">目前還沒有未結算的帳目！</p>`;
-        settlementContainer.innerHTML = '';
-      } else {
-        expensesDB.forEach((exp, idx) => {
-          let displayAmountStr = '';
-          if (exp.currency === 'TWD') {
-            displayAmountStr = `NT$ ${exp.amount.toLocaleString()}`;
-          } else {
-            const twd = Math.round(exp.amount / (exp.rate || 42));
-            displayAmountStr = `₩ ${exp.amount.toLocaleString()} <span style="font-size:12px; font-weight:normal; color:#64748b;">(約 NT$ ${twd.toLocaleString()})</span>`;
-          }
-
-          html += `
-            <div class="expense-card">
-              <div class="expense-actions">
-                <button class="btn-small" onclick="openEditExpenseModal(${idx})">✏️</button>
-                <button class="btn-small danger" onclick="deleteExpense(${idx})">🗑️</button>
-              </div>
-              <h4>${exp.title}</h4>
-              <div class="meta">付費者: <b>${exp.payer}</b> | 參與人: ${exp.participants.join(', ')}</div>
-              <div class="amount">${displayAmountStr}</div>
-            </div>`;
-        });
-        listContainer.innerHTML = html;
-      }
+      const listTitle = document.getElementById('expenseListTitle');
+      
+      const viewMode = document.getElementById('personalViewSelect').value;
 
       let balances = {};
       travelers.forEach(t => balances[t] = 0);
 
       let totalSpentKrwAll = 0;
+      let userPaidTwd = 0;
+      let userConsumedTwd = 0;
+
+      // 1. 底層運算 (計算所有人的損益，包含權重份數)
       expensesDB.forEach(exp => {
         let twdTotal = 0;
         let krwEquivalent = 0;
@@ -930,62 +954,130 @@
         }
 
         totalSpentKrwAll += krwEquivalent;
-        const twdShare = twdTotal / exp.participants.length;
+        
+        // 兼容舊版純字串格式，轉換為 {name, weight:1}
+        let parts = exp.participants.map(p => typeof p === 'string' ? {name: p, weight: 1} : p);
+        let totalWeight = parts.reduce((sum, p) => sum + p.weight, 0);
+
         balances[exp.payer] += twdTotal; 
-        exp.participants.forEach(p => {
-          balances[p] -= twdShare; 
+        parts.forEach(p => {
+          balances[p.name] -= (twdTotal / totalWeight) * p.weight; 
         });
+
+        // 專屬視角統計
+        if (viewMode !== 'All') {
+          if (exp.payer === viewMode) userPaidTwd += twdTotal;
+          let myPart = parts.find(p => p.name === viewMode);
+          if (myPart) userConsumedTwd += (twdTotal / totalWeight) * myPart.weight;
+        }
       });
 
       let totalSpentTwdAll = Math.round(totalSpentKrwAll / 42); 
 
-      let debtors = []; 
-      let creditors = []; 
-
-      travelers.forEach(t => {
-        let net = Math.round(balances[t]);
-        if (net < 0) debtors.push({ name: t, amount: -net });
-        else if (net > 0) creditors.push({ name: t, amount: net });
-      });
-
-      debtors.sort((a, b) => b.amount - a.amount);
-      creditors.sort((a, b) => b.amount - a.amount);
-
-      let transactions = [];
-      let d = 0, c = 0;
-      while (d < debtors.length && c < creditors.length) {
-        let payAmountTwd = Math.min(debtors[d].amount, creditors[c].amount);
-        let payAmountKrw = payAmountTwd * 42; 
+      // 2. 渲染流水帳 (依據視角過濾)
+      let html = '';
+      let filteredExpensesCount = 0;
+      
+      expensesDB.forEach((exp, idx) => {
+        let parts = exp.participants.map(p => typeof p === 'string' ? {name: p, weight: 1} : p);
         
-        transactions.push(`<b>${debtors[d].name}</b> 轉帳給 <b>${creditors[c].name}</b> : <b>NT$ ${payAmountTwd.toLocaleString()}</b> <span style="font-size:12px; font-weight:normal; color:#854d0e;">(約 ₩ ${payAmountKrw.toLocaleString()})</span>`);
-        
-        debtors[d].amount -= payAmountTwd;
-        creditors[c].amount -= payAmountTwd;
-        
-        if (debtors[d].amount === 0) d++;
-        if (creditors[c].amount === 0) c++;
-      }
-
-      if (expensesDB.length > 0) {
-        let settleHtml = `
-          <div class="settlement-box">
-            <div style="font-size: 13px; color: #854d0e; margin-bottom: 8px; font-weight: bold;">💰 當前階段總支出：₩ ${Math.round(totalSpentKrwAll).toLocaleString()} (約 NT$ ${Math.round(totalSpentTwdAll).toLocaleString()})</div>
-            <hr style="border:0; border-top:1px solid #fde047; margin: 8px 0;">
-            <h4 style="margin: 0 0 8px 0;">💡 智慧結算 (最低轉帳次數建議)</h4>`;
-        if (transactions.length === 0) {
-          settleHtml += `<div class="settlement-instruction" style="color:#166534;">目前大家互不相欠，完美平手！</div>`;
-        } else {
-          transactions.forEach(t => {
-            settleHtml += `<div class="settlement-instruction">👉 ${t}</div>`;
-          });
+        // 專屬視角過濾邏輯
+        if (viewMode !== 'All') {
+          if (exp.payer !== viewMode && !parts.some(p => p.name === viewMode)) return; // 沒關係就跳過
         }
-        settleHtml += `</div>`;
-        settlementContainer.innerHTML = settleHtml;
+        
+        filteredExpensesCount++;
+        
+        let displayAmountStr = '';
+        if (exp.currency === 'TWD') {
+          displayAmountStr = `NT$ ${exp.amount.toLocaleString()}`;
+        } else {
+          const twd = Math.round(exp.amount / (exp.rate || 42));
+          displayAmountStr = `₩ ${exp.amount.toLocaleString()} <span style="font-size:12px; font-weight:normal; color:#64748b;">(約 NT$ ${twd.toLocaleString()})</span>`;
+        }
+
+        // 份數顯示邏輯
+        let participantsStr = parts.map(p => p.weight === 1 ? p.name : `${p.name}(<b style="color:var(--primary)">${p.weight}份</b>)`).join(', ');
+
+        html += `
+          <div class="expense-card">
+            <div class="expense-actions">
+              <button class="btn-small" onclick="openEditExpenseModal(${idx})">✏️</button>
+              <button class="btn-small danger" onclick="deleteExpense(${idx})">🗑️</button>
+            </div>
+            <h4>${exp.title}</h4>
+            <div class="meta">付費者: <b>${exp.payer}</b> | 參與: ${participantsStr}</div>
+            <div class="amount">${displayAmountStr}</div>
+          </div>`;
+      });
+      
+      if (filteredExpensesCount === 0) {
+        if (viewMode === 'All') html = `<p style="color: #888; font-size: 13px; text-align: center;">目前還沒有未結算的帳目！</p>`;
+        else html = `<p style="color: #888; font-size: 13px; text-align: center;">你目前沒有參與任何未結算的帳目！</p>`;
+      }
+      listContainer.innerHTML = html;
+      listTitle.innerText = viewMode === 'All' ? "📜 當前未結算總流水帳" : `📜 包含 [ ${viewMode} ] 的流水帳`;
+
+      // 3. 渲染結算 / 專屬財報 面板
+      if (viewMode === 'All') {
+        let debtors = []; let creditors = []; 
+        travelers.forEach(t => {
+          let net = Math.round(balances[t]);
+          if (net < 0) debtors.push({ name: t, amount: -net });
+          else if (net > 0) creditors.push({ name: t, amount: net });
+        });
+        debtors.sort((a, b) => b.amount - a.amount);
+        creditors.sort((a, b) => b.amount - a.amount);
+
+        let transactions = [];
+        let d = 0, c = 0;
+        while (d < debtors.length && c < creditors.length) {
+          let payAmountTwd = Math.min(debtors[d].amount, creditors[c].amount);
+          let payAmountKrw = payAmountTwd * 42; 
+          transactions.push(`<b>${debtors[d].name}</b> 轉帳給 <b>${creditors[c].name}</b> : <b>NT$ ${payAmountTwd.toLocaleString()}</b> <span style="font-size:12px; font-weight:normal; color:#854d0e;">(約 ₩ ${payAmountKrw.toLocaleString()})</span>`);
+          debtors[d].amount -= payAmountTwd; creditors[c].amount -= payAmountTwd;
+          if (debtors[d].amount === 0) d++;
+          if (creditors[c].amount === 0) c++;
+        }
+
+        if (expensesDB.length > 0) {
+          let settleHtml = `
+            <div class="settlement-box">
+              <div style="font-size: 13px; color: #854d0e; margin-bottom: 8px; font-weight: bold;">💰 當前階段總支出：₩ ${Math.round(totalSpentKrwAll).toLocaleString()} (約 NT$ ${Math.round(totalSpentTwdAll).toLocaleString()})</div>
+              <hr style="border:0; border-top:1px solid #fde047; margin: 8px 0;">
+              <h4 style="margin: 0 0 8px 0;">💡 智慧結算 (最低轉帳次數建議)</h4>`;
+          if (transactions.length === 0) settleHtml += `<div class="settlement-instruction" style="color:#166534;">目前大家互不相欠，完美平手！</div>`;
+          else transactions.forEach(t => settleHtml += `<div class="settlement-instruction">👉 ${t}</div>`);
+          settleHtml += `</div>`;
+          settlementContainer.innerHTML = settleHtml;
+        } else {
+          settlementContainer.innerHTML = '';
+        }
       } else {
-        settlementContainer.innerHTML = '';
+        // 專屬視角財報
+        let userNet = Math.round(balances[viewMode]);
+        let userNetText = userNet > 0 ? '應收回' : (userNet < 0 ? '應支付' : '互不相欠');
+        let userNetColor = userNet > 0 ? '#15803d' : (userNet < 0 ? '#b91c1c' : '#334155');
+        
+        let settleHtml = `
+          <div style="background:#e0f2fe; border:1px solid #bae6fd; border-radius:10px; padding:16px; margin-bottom:16px;">
+             <h4 style="margin:0 0 10px 0; color:#0369a1; font-size:16px;">📊 ${viewMode} 的專屬財報</h4>
+             <div style="display:flex; justify-content:space-between; font-size:13px; color:#0c4a6e; margin-bottom:6px;">
+               <span>你代墊了總額：</span><b>+ NT$ ${Math.round(userPaidTwd).toLocaleString()}</b>
+             </div>
+             <div style="display:flex; justify-content:space-between; font-size:13px; color:#0c4a6e; margin-bottom:8px;">
+               <span>你實際消費了：</span><b>- NT$ ${Math.round(userConsumedTwd).toLocaleString()}</b>
+             </div>
+             <hr style="border:0; border-top:1px solid #bae6fd; margin:10px 0;">
+             <div style="display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:bold; color:${userNetColor};">
+               <span>淨餘額算總帳：</span><span>${userNetText} NT$ ${Math.abs(userNet).toLocaleString()}</span>
+             </div>
+          </div>
+        `;
+        settlementContainer.innerHTML = settleHtml;
       }
 
-      if (archivedPhases.length > 0) {
+      if (archivedPhases.length > 0 && viewMode === 'All') {
         let archHtml = `<h4 style="margin: 20px 0 8px 0; font-size: 14px; color: #475569;">📦 歷史已結算階段</h4>`;
         archivedPhases.forEach((phase, pIdx) => {
           let itemsHtml = '';
@@ -997,7 +1089,6 @@
                 <span style="color:var(--primary); font-weight:bold;">${itemAmtStr}</span>
               </div>`;
           });
-
           archHtml += `
             <div class="archive-card">
               <div class="archive-header" onclick="toggleArchiveBody(this)">
@@ -1010,14 +1101,13 @@
                   <button class="btn-small danger" onclick="deleteArchivedPhase(${pIdx}, event)">🗑️</button>
                 </div>
               </div>
-              <div class="archive-body">
-                ${itemsHtml}
-              </div>
+              <div class="archive-body">${itemsHtml}</div>
             </div>`;
         });
+        archivedContainer.style.display = 'block';
         archivedContainer.innerHTML = archHtml;
       } else {
-        archivedContainer.innerHTML = '';
+        archivedContainer.style.display = 'none';
       }
     }
 
