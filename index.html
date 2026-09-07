@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V36 </title>
+  <title>Seoul Trip - V37 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -148,6 +148,12 @@
     .form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; font-weight:bold; }
     .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
     
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .checkbox-group label { background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid #cbd5e1; user-select: none; }
+    .checkbox-group input { display: none; }
+    .checkbox-group input:checked + span { color: var(--primary); font-weight: bold; }
+    .checkbox-group label.selected { background: #fee2e2; border-color: var(--primary); color: var(--primary); font-weight: bold; }
+
     .region-checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .region-checkbox-group label { padding: 6px 12px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; margin-bottom: 0; transition: 0.2s; }
     
@@ -173,7 +179,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V36 </p>
+      <p>V37 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -189,7 +195,6 @@
     </div>
     <div class="drawer-body">
       
-      <!-- V36 個人專屬視角切換器 -->
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; background: #e0f2fe; padding: 10px 12px; border-radius: 8px; border: 1px solid #bae6fd;">
         <span style="font-size:13px; font-weight:bold; color:#0369a1;">👤 專屬視角：</span>
         <select id="personalViewSelect" onchange="renderExpenseDrawer()" style="padding:6px; border-radius:6px; border: 1px solid #7dd3fc; font-size:13px; flex:1; font-weight:bold; color:#0c4a6e; background:#f0f9ff;">
@@ -284,11 +289,9 @@
         </select>
       </div>
       
-      <!-- V36 拆帳權重比例設定區 -->
       <div class="form-group">
         <label>參與拆帳人員與權重 (未勾選即不參與)</label>
         <div id="expParticipantsList" style="display: flex; flex-direction: column; max-height: 250px; overflow-y: auto; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <!-- JS 動態產生打勾與份數輸入框 -->
         </div>
       </div>
 
@@ -714,6 +717,14 @@
       document.getElementById('expenseDrawer').classList.toggle('open');
     }
 
+    function toggleCheckLabel(checkbox) {
+      if (checkbox.checked) {
+        checkbox.parentElement.classList.add('selected');
+      } else {
+        checkbox.parentElement.classList.remove('selected');
+      }
+    }
+
     function toggleCurrencyMode() {
       const cur = document.getElementById('expCurrency').value;
       const rateGroup = document.getElementById('krwRateGroup');
@@ -736,7 +747,6 @@
       btn.innerText = oldText;
     };
 
-    // V36: 產生參與人員與份數調整列表
     function renderParticipantList(selectedData = null) {
       const container = document.getElementById('expParticipantsList');
       let html = '';
@@ -777,7 +787,6 @@
       container.innerHTML = html;
     }
 
-    // V36: 切換參與人員勾選狀態連動樣式
     window.toggleWeightRow = function(name, checkbox) {
       const row = document.getElementById(`row-${name}`);
       const ctrl = document.getElementById(`weight-ctrl-${name}`);
@@ -816,7 +825,7 @@
       toggleCurrencyMode();
       document.getElementById('expPayer').value = '文';
       
-      renderParticipantList(null); // 預設全選
+      renderParticipantList(null); 
       document.getElementById('expenseModal').style.display = 'flex';
     };
 
@@ -925,7 +934,6 @@
       }
     };
 
-    // V36: 重新渲染記帳抽屜 (加入份數相容與個人專屬視角)
     function renderExpenseDrawer() {
       const listContainer = document.getElementById('expenseListContainer');
       const settlementContainer = document.getElementById('settlementContainer');
@@ -941,7 +949,6 @@
       let userPaidTwd = 0;
       let userConsumedTwd = 0;
 
-      // 1. 底層運算 (計算所有人的損益，包含權重份數)
       expensesDB.forEach(exp => {
         let twdTotal = 0;
         let krwEquivalent = 0;
@@ -955,7 +962,6 @@
 
         totalSpentKrwAll += krwEquivalent;
         
-        // 兼容舊版純字串格式，轉換為 {name, weight:1}
         let parts = exp.participants.map(p => typeof p === 'string' ? {name: p, weight: 1} : p);
         let totalWeight = parts.reduce((sum, p) => sum + p.weight, 0);
 
@@ -964,7 +970,6 @@
           balances[p.name] -= (twdTotal / totalWeight) * p.weight; 
         });
 
-        // 專屬視角統計
         if (viewMode !== 'All') {
           if (exp.payer === viewMode) userPaidTwd += twdTotal;
           let myPart = parts.find(p => p.name === viewMode);
@@ -974,16 +979,14 @@
 
       let totalSpentTwdAll = Math.round(totalSpentKrwAll / 42); 
 
-      // 2. 渲染流水帳 (依據視角過濾)
       let html = '';
       let filteredExpensesCount = 0;
       
       expensesDB.forEach((exp, idx) => {
         let parts = exp.participants.map(p => typeof p === 'string' ? {name: p, weight: 1} : p);
         
-        // 專屬視角過濾邏輯
         if (viewMode !== 'All') {
-          if (exp.payer !== viewMode && !parts.some(p => p.name === viewMode)) return; // 沒關係就跳過
+          if (exp.payer !== viewMode && !parts.some(p => p.name === viewMode)) return; 
         }
         
         filteredExpensesCount++;
@@ -996,7 +999,6 @@
           displayAmountStr = `₩ ${exp.amount.toLocaleString()} <span style="font-size:12px; font-weight:normal; color:#64748b;">(約 NT$ ${twd.toLocaleString()})</span>`;
         }
 
-        // 份數顯示邏輯
         let participantsStr = parts.map(p => p.weight === 1 ? p.name : `${p.name}(<b style="color:var(--primary)">${p.weight}份</b>)`).join(', ');
 
         html += `
@@ -1018,7 +1020,6 @@
       listContainer.innerHTML = html;
       listTitle.innerText = viewMode === 'All' ? "📜 當前未結算總流水帳" : `📜 包含 [ ${viewMode} ] 的流水帳`;
 
-      // 3. 渲染結算 / 專屬財報 面板
       if (viewMode === 'All') {
         let debtors = []; let creditors = []; 
         travelers.forEach(t => {
@@ -1054,7 +1055,6 @@
           settlementContainer.innerHTML = '';
         }
       } else {
-        // 專屬視角財報
         let userNet = Math.round(balances[viewMode]);
         let userNetText = userNet > 0 ? '應收回' : (userNet < 0 ? '應支付' : '互不相欠');
         let userNetColor = userNet > 0 ? '#15803d' : (userNet < 0 ? '#b91c1c' : '#334155');
@@ -1111,172 +1111,6 @@
       }
     }
 
-    window.openVoteModal = function(name) {
-      const item = pocketDB.find(p => p.name === name);
-      if(!item) return;
-      if(!item.wantToGo) item.wantToGo = [];
-      document.getElementById('vItemName').innerText = name;
-      document.getElementById('vItemNameHidden').value = name;
-      renderVoteButtons(item);
-      document.getElementById('voteModal').style.display = 'flex';
-    }
-
-    window.renderVoteButtons = function(item) {
-      const container = document.getElementById('voteCheckboxes');
-      let html = '';
-      travelers.forEach(t => {
-        const isSelected = item.wantToGo && item.wantToGo.includes(t);
-        const style = isSelected 
-          ? 'background: #ecc94b; color: #744210; border: 1px solid #d69e2e; font-weight:bold;' 
-          : 'background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;';
-        html += `<label style="${style}" onclick="toggleVote('${item.name.replace(/'/g, "\\'")}', '${t}')"><span>${t}</span></label>`;
-      });
-      container.innerHTML = html;
-    }
-
-    window.toggleVote = function(itemName, traveler) {
-      const item = pocketDB.find(p => p.name === itemName);
-      if(!item) return;
-      if(!item.wantToGo) item.wantToGo = [];
-      
-      if(item.wantToGo.includes(traveler)) {
-        item.wantToGo = item.wantToGo.filter(t => t !== traveler);
-      } else {
-        item.wantToGo.push(traveler);
-      }
-      renderVoteButtons(item);
-      syncWithCloud();
-    }
-
-    window.closeVoteModal = function() {
-      document.getElementById('voteModal').style.display = 'none';
-      let activeIndex = 0;
-      document.querySelectorAll('.tab').forEach((tab, idx) => {
-        if(tab.classList.contains('active')) activeIndex = idx;
-      });
-      renderApp();
-      switchTab(activeIndex);
-    }
-
-    window.openDayRegionModal = function(dayIndex) {
-      document.getElementById('drDayIndex').value = dayIndex;
-      document.getElementById('drSubtitle').value = appData[dayIndex].subtitle || '';
-      tempSelectedRegions = [...(appData[dayIndex].regions || [])];
-      renderDynamicRegionCheckboxes();
-      document.getElementById('dayRegionModal').style.display = 'flex';
-    };
-
-    window.toggleDynamicRegion = function(regionName) {
-      if (tempSelectedRegions.includes(regionName)) {
-        tempSelectedRegions = tempSelectedRegions.filter(r => r !== regionName);
-      } else {
-        tempSelectedRegions.push(regionName);
-      }
-      renderDynamicRegionCheckboxes(); 
-    };
-
-    window.renderDynamicRegionCheckboxes = function() {
-      const allRegions = getAllAvailableRegions();
-      const container = document.getElementById('drCheckboxesDynamicArea');
-      container.innerHTML = '';
-
-      if (tempSelectedRegions.length === 0) {
-        let html = '<div class="region-checkbox-group">';
-        allRegions.forEach(r => {
-          html += `<label style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;" onclick="toggleDynamicRegion('${r}')"><span>${r}</span></label>`;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-        return;
-      }
-
-      const origin = tempSelectedRegions[0];
-      let html = `<div style="font-size: 12px; color: #333; margin-bottom: 6px; font-weight: bold; margin-top: 4px;">✅ 已選區域 (依『${origin}』為基準計算距離)</div>`;
-      html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-      tempSelectedRegions.forEach(r => {
-        html += `<label style="background: var(--primary); color: white; border: 1px solid var(--primary);" onclick="toggleDynamicRegion('${r}')"><span style="font-weight:bold;">${r}</span></label>`;
-      });
-      html += '</div>';
-
-      let unselected = allRegions.filter(r => !tempSelectedRegions.includes(r));
-      let mapped = unselected.map(r => ({ name: r, dist: getDistance(origin, r) }));
-      mapped.sort((a, b) => a.dist - b.dist);
-
-      let nearby = mapped.filter(m => m.dist < 15);
-      let medium = mapped.filter(m => m.dist >= 15 && m.dist < 30);
-      let far = mapped.filter(m => m.dist >= 30 && m.dist !== 999);
-      let unknown = mapped.filter(m => m.dist === 999);
-
-      if (nearby.length > 0) {
-        html += '<div style="font-size: 12px; color: #166534; margin-bottom: 6px; font-weight: bold;">🟢 相鄰區域 (極近)</div>';
-        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-        nearby.forEach(m => { html += `<label style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
-        html += '</div>';
-      }
-      if (medium.length > 0) {
-        html += '<div style="font-size: 12px; color: #854d0e; margin-bottom: 6px; font-weight: bold;">🟡 中距離區域 (需搭車)</div>';
-        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-        medium.forEach(m => { html += `<label style="background: #fef9c3; color: #854d0e; border: 1px solid #fef08a;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
-        html += '</div>';
-      }
-      if (far.length > 0) {
-        html += '<div style="font-size: 12px; color: #991b1b; margin-bottom: 6px; font-weight: bold;">🔴 較遠區域 (跨越半個首爾)</div>';
-        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-        far.forEach(m => { html += `<label style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
-        html += '</div>';
-      }
-      container.innerHTML = html;
-    };
-
-    window.saveDayRegions = function() {
-      const dayIndex = parseInt(document.getElementById('drDayIndex').value, 10);
-      appData[dayIndex].subtitle = document.getElementById('drSubtitle').value;
-      appData[dayIndex].regions = tempSelectedRegions;
-      if(currentPocketRegion[dayIndex] !== 'All_Global') currentPocketRegion[dayIndex] = 'All'; 
-      syncWithCloud();
-      document.getElementById('dayRegionModal').style.display = 'none';
-      renderApp(); switchTab(dayIndex);
-    };
-
-    window.openBlockModal = function(dayIndex, evIndex = null) {
-      document.getElementById('bDayIndex').value = dayIndex;
-      document.getElementById('bEvIndex').value = evIndex !== null ? evIndex : '';
-      if (evIndex !== null) {
-        const ev = appData[dayIndex].events[evIndex];
-        document.getElementById('bTime').value = ev.time || '';
-        document.getElementById('bTitle').value = ev.title || '';
-        document.getElementById('bMapQ').value = ev.mapQuery || '';
-        document.getElementById('bDesc').value = ev.desc || '';
-      } else {
-        document.getElementById('bTime').value = ''; document.getElementById('bTitle').value = '';
-        document.getElementById('bMapQ').value = ''; document.getElementById('bDesc').value = '';
-      }
-      document.getElementById('blockModal').style.display = 'flex';
-    };
-
-    window.saveBlock = function() {
-      const dayIndex = parseInt(document.getElementById('bDayIndex').value, 10);
-      const evIndex = document.getElementById('bEvIndex').value;
-      const newBlock = {
-        time: document.getElementById('bTime').value || '12:00',
-        title: document.getElementById('bTitle').value || '新區間',
-        mapQuery: document.getElementById('bMapQ').value || '',
-        desc: document.getElementById('bDesc').value || ''
-      };
-      if (evIndex === '') {
-        newBlock.subItems = []; appData[dayIndex].events.push(newBlock);
-      } else {
-        const idx = parseInt(evIndex, 10);
-        newBlock.subItems = appData[dayIndex].events[idx].subItems || [];
-        appData[dayIndex].events[idx] = newBlock;
-      }
-      appData[dayIndex].events.sort((a, b) => a.time.localeCompare(b.time));
-      syncWithCloud(); 
-      document.getElementById('blockModal').style.display = 'none';
-      renderApp(); 
-      switchTab(dayIndex);
-    };
-
     window.switchTab = function(activeIndex) {
       const targetIndex = parseInt(activeIndex, 10);
       document.querySelectorAll('.tab').forEach((tab, index) => tab.classList.toggle('active', index === targetIndex));
@@ -1309,6 +1143,22 @@
       if (selectedFilter === 'All_Global') {} 
       else if (selectedFilter === 'All') { baseFiltered = baseFiltered.filter(item => dayRegions.includes(item.region)); } 
       else { baseFiltered = baseFiltered.filter(item => item.region === selectedFilter); }
+      
+      // V37: 自動優先級排序 (1: 想去未加入, 2: 普通, 3: 已加入)
+      baseFiltered.sort((a, b) => {
+        const aScheduled = getScheduledDays(a.name).length > 0;
+        const bScheduled = getScheduledDays(b.name).length > 0;
+        const aWant = a.wantToGo && a.wantToGo.length > 0;
+        const bWant = b.wantToGo && b.wantToGo.length > 0;
+
+        const getPriority = (isSched, isWant) => {
+          if (isSched) return 3; 
+          if (isWant) return 1;  
+          return 2;              
+        };
+
+        return getPriority(aScheduled, aWant) - getPriority(bScheduled, bWant);
+      });
       
       if(baseFiltered.length === 0) {
         filtersEl.innerHTML = '';
