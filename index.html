@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V30 </title>
+  <title>Seoul Trip - V30.1 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -176,7 +176,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V30 </p>
+      <p>V30.1 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -425,9 +425,7 @@
       document.querySelector('.sync-btn').innerText = '🔄 同步最新';
     }
 
-    // V30 核心升級：記錄目前所在分頁，渲染後不回彈首頁
     function renderApp() {
-      // 找出當前啟動中的分頁索引
       let activeIndex = 0;
       document.querySelectorAll('.tab').forEach((tab, index) => {
         if (tab.classList.contains('active')) activeIndex = index;
@@ -537,11 +535,13 @@
       });
     }
 
+    // V30.1 升級：加入 scroll 參數，讓拖曳時頁面會自動捲動
     function initSortable(dayIndex) {
       const listEl = document.getElementById(`timeline-list-${dayIndex}`);
       if (listEl) {
         Sortable.create(listEl, {
           animation: 150, handle: '.block-drag-handle',
+          scroll: true, scrollSensitivity: 60, scrollSpeed: 15,
           onEnd: function (evt) {
             const movedItem = appData[dayIndex].events.splice(evt.oldIndex, 1)[0];
             appData[dayIndex].events.splice(evt.newIndex, 0, movedItem);
@@ -553,6 +553,7 @@
       document.querySelectorAll(`#content-${dayIndex} .sub-items-container`).forEach(container => {
         Sortable.create(container, {
           group: 'shared-subitems', animation: 150, handle: '.chip-drag-handle',
+          scroll: true, scrollSensitivity: 60, scrollSpeed: 15,
           onAdd: function (evt) {
             if (evt.from.classList.contains('pocket-grid')) {
               const toDay = parseInt(evt.to.getAttribute('data-day'));
@@ -585,7 +586,8 @@
       if (pocketGrid) {
         Sortable.create(pocketGrid, {
           group: { name: 'shared-subitems', pull: 'clone', put: false },
-          sort: false, handle: '.pocket-drag-handle', animation: 150
+          sort: false, handle: '.pocket-drag-handle', animation: 150,
+          scroll: true, scrollSensitivity: 60, scrollSpeed: 15
         });
       }
     }
