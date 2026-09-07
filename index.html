@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V20.2 </title>
+  <title>Seoul Trip - V21 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -134,7 +134,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V20.2 </p>
+      <p>V21 </p>
     </div>
     <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
   </div>
@@ -181,10 +181,9 @@
   </div>
 
   <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>地圖預設關鍵字</label><input type="text" id="bMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
-  <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字</label><input type="text" id="pMapQ"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
+  <div class="modal-overlay" id="pocketModal"><div class="modal"><h3 style="margin-top:0;">✨ 新增名單</h3><div class="form-group"><label>名稱</label><input type="text" id="pName"></div><div class="form-group"><label>關鍵字 (若已知韓文名強烈建議填韓文)</label><input type="text" id="pMapQ" placeholder="例如: 슬로우브루펍"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div><div class="form-group"><label>手動修改地區 (可自填新區)</label><input type="text" id="pRegion" placeholder="例如: 弘大、聖水..."></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button><button class="btn-save" onclick="saveToPocket()">加入名單</button></div></div></div>
   <div class="modal-overlay" id="blockSelectModal"><div class="modal"><h3 style="margin-top:0;">➕ 選擇區間</h3><p style="font-size:13px; color:#666;">將 <strong id="bsItemName" style="color:var(--primary)"></strong> 加入哪裡？</p><input type="hidden" id="bsDayIndex"><input type="hidden" id="bsItemMapQ"><div class="form-group"><select id="bsBlockSelect"></select></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockSelectModal').style.display='none'">取消</button><button class="btn-save" onclick="confirmAddBlock()">確定</button></div></div></div>
   
-  <!-- 商家資訊 Modal (V20.2 支援 Google Maps + Naver Map 雙開關) -->
   <div class="modal-overlay" id="infoModal">
     <div class="modal">
       <h3 style="margin-top:0; font-size:18px;" id="infoName"></h3>
@@ -206,6 +205,81 @@
   <script>
     const JSONBIN_BIN_ID = '6a9da168da38895dfe4076e7'; 
     const JSONBIN_API_KEY = '$2a$10$7PzBRwuMIt9Xl3Xl1b1h/eWFHQUVbxmVKAwrj8A009EU62i2lB6EO';
+
+    // V21 核心：內建中英韓自動翻譯字典 (專為 Naver Map 準備)
+    const koreanDict = {
+      "Slow Brew Pub Yeonnam": "슬로우브루펍",
+      "Please No Follow Yeonnam": "플리즈노팔로우 연남",
+      "MUCENT Hongdae Showroom": "무센트 홍대",
+      "Musinsa Standard Hongdae": "무신사 스탠다드 홍대",
+      "Chaakan Shoes Hongdae": "착한구두 홍대",
+      "DayBeau Clinic Hongdae": "데이뷰의원 홍대",
+      "T1 Base Camp Hongdae": "T1 베이스캠프 홍대",
+      "Mangwon Market": "망원시장",
+      "ADER ERROR SEONGSU": "아더 성수 스페이스",
+      "BLUE ELEPHANT SEONGSU": "블루엘리펀트 성수",
+      "MUSINSA EMPTY SEONGSU": "무신사 엠프티 성수",
+      "MUCENT Seongsu Showroom": "무센트 성수",
+      "BADBLOOD Seongsu Flagship Store": "배드블러드 성수",
+      "ILKW Seoul": "일광전구 성수",
+      "KHIHO SEONGSU": "기호 성수",
+      "MARGESHERWOOD Seoul Flagship Store": "마제셔우드 성수",
+      "Subdued Seoul": "서브듀드 서울",
+      "aeae Seongsu": "aeae 성수",
+      "Brandy Melville Seongsu": "브랜디멜빌 성수",
+      "Cube Entertainment Seongsu": "큐브엔터테인먼트",
+      "29cm Seongsu": "이구성수",
+      "Seoul Forest": "서울숲",
+      "Cafe Onion Seongsu": "어니언 성수",
+      "HAUS DOSAN": "하우스 도산",
+      "Stussy Seoul Dosan": "스투시 서울 챕터",
+      "MUCENT Hannam Flagship": "무센트 한남",
+      "Rest & Recreation Hannam": "레스튼레크리에이션 한남",
+      "The Barnnet Hannam": "더바넷 한남",
+      "GROVE Hannam": "그로브 한남",
+      "Atelier Nain Hannam": "아틀리에 나인 한남",
+      "ROLAROLA Hannam": "롤라롤라 한남",
+      "ason Hannam": "어슨 한남",
+      "MARGESHERWOOD Hannam": "마제셔우드 한남",
+      "Mango Many Please Hannam": "망고매니플리즈 한남",
+      "Glowny Hannam": "글로니 한남",
+      "Haus Aver": "하우스 에버",
+      "Sinoon Dosan": "시눈 도산",
+      "Beaker Hannam": "비이커 한남",
+      "Gen.G Seoul": "젠지 사옥",
+      "T1 Seoul HQ": "T1 사옥",
+      "HYBE INSIGHT": "하이브 사옥",
+      "Jeju Rooftop Black BBQ Seoul": "제주옥탑",
+      "NUDAKE Haus Dosan": "누데이크 하우스 도산",
+      "nyunyu Dongdaemun": "뉴뉴 동대문",
+      "Gyeongbokgung Palace": "경복궁",
+      "Bukchon Hanok Village": "북촌한옥마을",
+      "Cheonggyecheon": "청계천",
+      "Gwangjang Market": "광장시장",
+      "Artist Bakery Anguk": "아티스트베이커리 안국",
+      "Cafe Highwaist Ikseon": "카페 하이웨스트 익선",
+      "Ouvrir Seoul": "우브르",
+      "Cafe Layered Bukchon": "카페 레이어드 북촌",
+      "Shinsegae Duty Free Myeongdong": "신세계면세점 명동점",
+      "nyunyu Myeongdong": "뉴뉴 명동",
+      "Yeouido Hangang Park": "여의도 한강공원",
+      "N Seoul Tower": "N서울타워",
+      "Matin Kim Myeongdong": "마뗑킴 명동",
+      "Musinsa Standard Myeongdong": "무신사 스탠다드 명동",
+      "Ralph Lauren Seoul": "랄프로렌 칠드런",
+      "Stereophonic Sound Seoul": "스테레오포닉사운드",
+      "Donggyo-ro 47-gil Mapo-gu, Seoul": "서울 마포구 동교로 47길",
+      "Incheon International Airport": "인천국제공항",
+      "Hongik University Station": "홍대입구역",
+      "Yeonnam-dong Seoul": "연남동",
+      "Hongdae Seoul": "홍대",
+      "Hannam-dong Seoul": "한남동",
+      "Seongsu-dong Seoul": "성수동",
+      "Anguk Station": "안국역",
+      "Euljiro 3-ga Station": "을지로3가역",
+      "Dongdaemun Seoul": "동대문",
+      "Myeongdong Seoul": "명동"
+    };
 
     window.linkify = function(text) {
       if (!text) return "";
@@ -797,15 +871,19 @@
       if(cardElement) cardElement.classList.add('active-card');
     };
 
-    // V20.2: 彈窗內支援 Google Maps 與 Naver Map 雙連結跳轉
+    // V21: 利用翻譯引擎，將英文關鍵字轉換成 Naver 專屬韓文
     window.viewSubItem = function(name, mapQuery) {
       updateMap(mapQuery, null); 
       const item = pocketDB.find(p => p.name === name);
       document.getElementById('infoName').innerText = name;
       
       const searchQuery = mapQuery || name;
+      // Google Map 吃原本的關鍵字
       document.getElementById('infoMapLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
-      document.getElementById('infoNaverLink').href = `https://map.naver.com/v5/search/${encodeURIComponent(searchQuery)}`;
+      
+      // Naver Map 透過翻譯字典自動轉換 (若找不到對應字，才使用原字)
+      const naverQuery = koreanDict[searchQuery] || searchQuery;
+      document.getElementById('infoNaverLink').href = `https://map.naver.com/v5/search/${encodeURIComponent(naverQuery)}`;
       
       if (item) {
         if (item.wantToGo && item.wantToGo.length > 0) {
