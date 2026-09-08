@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V38 </title>
+  <title>Seoul Trip - V39 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -53,7 +53,7 @@
     .timeline-item { background: var(--card-bg); border-radius: 12px; padding: 16px 16px 16px 52px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; gap: 16px; position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease; flex-direction: column; cursor: pointer; }
     .timeline-item:hover, .timeline-item.active-card { transform: translateX(4px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
     
-    .block-drag-handle { position: absolute; left: 0; top: 0; bottom: 0; width: 36px; background: #f0f4f8; border-radius: 12px 0 0 12px; display: flex; align-items: center; justify-content: center; color: #a0aec0; font-size: 16px; cursor: grab; z-index: 10; transition: 0.2s; }
+    .block-drag-handle { position: absolute; left: 0; top: 0; bottom: 0; width: 36px; background: rgba(0,0,0,0.05); border-radius: 12px 0 0 12px; display: flex; align-items: center; justify-content: center; color: #a0aec0; font-size: 16px; cursor: grab; z-index: 10; transition: 0.2s; }
     .block-drag-handle:active { cursor: grabbing; background: var(--primary-light); color: white; }
     .timeline-item:hover .block-drag-handle { background: var(--primary); color: white; }
 
@@ -63,10 +63,10 @@
     .content-col h3 { margin: 0 0 6px 0; font-size: 16px; }
     .content-col p { margin: 0; font-size: 14px; color: var(--text-muted); white-space: pre-wrap; word-break: break-word; }
     
-    .sub-items-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; margin-left: 66px; padding-top: 12px; border-top: 1px dashed #eee; min-height: 48px; }
+    .sub-items-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; margin-left: 66px; padding-top: 12px; border-top: 1px dashed rgba(0,0,0,0.1); min-height: 48px; }
     .sub-item-chip { background: #f0f4f8; color: #333; font-size: 13px; font-weight: 600; border-radius: 20px; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden; padding: 0; }
     
-    .chip-drag-handle { background: #e2e8f0; padding: 6px 10px; cursor: grab; color: #718096; border-radius: 20px 0 0 20px; font-size: 14px; }
+    .chip-drag-handle { background: rgba(0,0,0,0.05); padding: 6px 10px; cursor: grab; color: #718096; border-radius: 20px 0 0 20px; font-size: 14px; }
     .chip-drag-handle:active { cursor: grabbing; background: var(--primary-light); color: white; }
     .chip-text { padding: 6px 8px; cursor: pointer; }
     .chip-text:hover { color: var(--primary); }
@@ -74,8 +74,8 @@
     .chip-close:hover { color: var(--primary); }
     
     .action-btns { position: absolute; top: 16px; right: 16px; display: flex; gap: 6px; }
-    .btn-small { background: #eee; border: none; padding: 4px 8px; border-radius: 6px; font-size: 12px; cursor: pointer; color: #555; font-weight: bold; }
-    .btn-small:hover { background: #ddd; }
+    .btn-small { background: rgba(0,0,0,0.05); border: none; padding: 4px 8px; border-radius: 6px; font-size: 12px; cursor: pointer; color: #555; font-weight: bold; }
+    .btn-small:hover { background: rgba(0,0,0,0.1); }
     .btn-small.danger { color: #d32f2f; }
     .btn-small.danger:hover { background: #fee2e2; }
     
@@ -108,7 +108,6 @@
     .pocket-card .edit-btn { position: absolute; top: 10px; right: 34px; background: none; border: none; font-size: 14px; cursor: pointer; color: #aaa; padding: 0; z-index: 5; }
     .pocket-card .edit-btn:hover { color: var(--primary); }
 
-    /* V38 強制將新增區間按鈕置頂，避免被其他元素覆蓋導致無法點擊 */
     .btn-add-block { display: block; width: 100%; padding: 12px; background: white; border: 2px dashed #ccc; color: #888; border-radius: 12px; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 24px; position: relative; z-index: 10; }
     .btn-add-block:hover { border-color: var(--primary); color: var(--primary); }
     .btn-add-global { display: block; width: 100%; padding: 12px; background: var(--primary-light); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; text-align: center; margin-top: 16px; position: relative; z-index: 10; }
@@ -180,7 +179,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V38 </p>
+      <p>V39 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -305,7 +304,38 @@
 
   <div class="modal-overlay" id="dayRegionModal"><div class="modal"><h3 style="margin-top:0;">⚙️ 設定當日目標區域</h3><input type="hidden" id="drDayIndex"><div class="form-group"><label>當日副標題 (選填)</label><input type="text" id="drSubtitle" placeholder="例如：逛街與烤肉之夜"></div><div class="form-group"><label>勾選包含區域 (會依據第一個選項動態顯示距離遠近)</label><div id="drCheckboxesDynamicArea"></div></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('dayRegionModal').style.display='none'">取消</button><button class="btn-save" onclick="saveDayRegions()">儲存設定</button></div></div></div>
   <div class="modal-overlay" id="voteModal"><div class="modal"><h3 style="margin-top:0; font-size:18px;">🙋‍♂️ 誰想去 <strong id="vItemName" style="color:var(--primary)"></strong>？</h3><input type="hidden" id="vItemNameHidden"><div class="region-checkbox-group" id="voteCheckboxes" style="margin-bottom:12px;"></div><div class="modal-actions"><button class="btn-save" style="width:100%" onclick="closeVoteModal()">完成</button></div></div></div>
-  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">➕ 新增區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="bMapQ" placeholder="輸入關鍵字"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
+  
+  <div class="modal-overlay" id="blockModal">
+    <div class="modal">
+      <h3 style="margin-top:0;" id="bModalTitle">➕ 新增區間</h3>
+      <input type="hidden" id="bDayIndex">
+      <input type="hidden" id="bEvIndex">
+      
+      <!-- V39: 新增區塊顏色選擇器 -->
+      <div class="form-group">
+        <label>區塊標記顏色</label>
+        <select id="bColor">
+          <option value="">預設 (純白)</option>
+          <option value="#fee2e2">🔴 淺紅 (推薦美食)</option>
+          <option value="#ffedd5">🟠 淺橘 (推薦活動)</option>
+          <option value="#fef9c3">🟡 淺黃 (推薦購物)</option>
+          <option value="#dcfce7">🟢 淺綠 (推薦景點)</option>
+          <option value="#e0f2fe">🔵 淺藍 (推薦交通)</option>
+          <option value="#f3e8ff">🟣 淺紫 (自由時間)</option>
+          <option value="#f1f5f9">⚪ 淺灰 (彈性備案)</option>
+        </select>
+      </div>
+
+      <div class="form-group"><label>時間</label><input type="text" id="bTime"></div>
+      <div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div>
+      <div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="bMapQ" placeholder="輸入關鍵字"></div>
+      <div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button>
+        <button class="btn-save" onclick="saveBlock()">儲存</button>
+      </div>
+    </div>
+  </div>
   
   <div class="modal-overlay" id="pocketModal">
     <div class="modal">
@@ -323,15 +353,8 @@
         </div>
         <div class="form-group" style="flex: 1;">
           <label>區域</label>
-          <select id="pRegionSelect" onchange="toggleCustomRegion()">
-            <option value="弘大">弘大</option>
-            <option value="延南">延南</option>
-            <option value="聖水">聖水</option>
-            <option value="漢南">漢南</option>
-            <option value="島山">島山</option>
-            <option value="明洞">明洞</option>
-            <option value="custom">✍️ 自訂其他...</option>
-          </select>
+          <!-- V39: 動態渲染的下拉選單 -->
+          <select id="pRegionSelect" onchange="toggleCustomRegion()"></select>
         </div>
       </div>
       
@@ -555,8 +578,11 @@
           }
           subItemsHtml += '</div>';
 
+          // V39: 如果有自訂顏色，就加到外層容器的 style 中
+          const customColorStyle = ev.color ? `background-color: ${ev.color};` : '';
+
           html += `
-            <div class="timeline-item" data-ev-index="${evIndex}" onclick="updateMap('${searchQuery}', this)">
+            <div class="timeline-item" data-ev-index="${evIndex}" style="${customColorStyle}" onclick="updateMap('${searchQuery}', this)">
               <div class="block-drag-handle">⋮⋮</div>
               <div class="timeline-header">
                 <div class="time-col">${ev.time}</div>
@@ -615,18 +641,16 @@
       });
     }
 
-    // V38: 徹底修正 Modal 觸發時引數遺失或受干擾導致的 Undefined 錯誤
     window.openBlockModal = function(dayIndex, evIndex) {
       document.getElementById('bDayIndex').value = dayIndex;
       
-      // 清空預設值
       document.getElementById('bEvIndex').value = '';
       document.getElementById('bTime').value = '';
       document.getElementById('bTitle').value = '';
       document.getElementById('bMapQ').value = '';
       document.getElementById('bDesc').value = '';
+      document.getElementById('bColor').value = ''; // V39 重設顏色
       
-      // 若為編輯模式 (判斷 evIndex 是否為合法數值)
       if (evIndex !== undefined && evIndex !== null && evIndex !== '' && !isNaN(evIndex) && typeof evIndex !== 'object') {
         const idx = parseInt(evIndex, 10);
         document.getElementById('bModalTitle').innerText = '✏️ 編輯區間';
@@ -638,9 +662,9 @@
           document.getElementById('bTitle').value = ev.title || '';
           document.getElementById('bMapQ').value = ev.mapQuery || '';
           document.getElementById('bDesc').value = ev.desc || '';
+          document.getElementById('bColor').value = ev.color || ''; // V39 載入顏色
         }
       } else {
-        // 新增模式
         document.getElementById('bModalTitle').innerText = '➕ 新增區間';
       }
       
@@ -651,11 +675,13 @@
       const dayIndex = parseInt(document.getElementById('bDayIndex').value, 10);
       const evIndexStr = document.getElementById('bEvIndex').value;
       
+      // V39 取得並儲存顏色
       const newBlock = {
         time: document.getElementById('bTime').value || '12:00',
         title: document.getElementById('bTitle').value || '新區間',
         mapQuery: document.getElementById('bMapQ').value || '',
-        desc: document.getElementById('bDesc').value || ''
+        desc: document.getElementById('bDesc').value || '',
+        color: document.getElementById('bColor').value || ''
       };
       
       if (evIndexStr === '') {
@@ -1264,15 +1290,51 @@
       gridEl.innerHTML = cardsHtml;
     };
 
+    // V39: 動態產生區域下拉選單的共用函式
+    window.populateRegionDropdown = function(selectedRegion) {
+      const select = document.getElementById('pRegionSelect');
+      // 將預設基本盤與口袋名單中現有的所有區域合併
+      const currentRegions = new Set(["弘大", "延南", "聖水", "漢南", "島山", "明洞"]);
+      pocketDB.forEach(item => { 
+        if (item.region && item.region !== '其他' && item.region.trim() !== '') {
+          currentRegions.add(item.region); 
+        }
+      });
+      
+      const sortedRegions = Array.from(currentRegions).sort();
+      
+      let html = '';
+      sortedRegions.forEach(r => {
+        html += `<option value="${r}">${r}</option>`;
+      });
+      html += `<option value="custom">✍️ 自訂其他...</option>`;
+      select.innerHTML = html;
+
+      // 判斷選單焦點與自訂框顯示與否
+      if (selectedRegion && sortedRegions.includes(selectedRegion)) {
+        select.value = selectedRegion;
+        document.getElementById('customRegionGroup').style.display = 'none';
+      } else if (selectedRegion && selectedRegion !== '其他') {
+        select.value = 'custom';
+        document.getElementById('customRegionGroup').style.display = 'block';
+        document.getElementById('pRegionCustom').value = selectedRegion;
+      } else {
+        select.value = sortedRegions[0];
+        document.getElementById('customRegionGroup').style.display = 'none';
+        document.getElementById('pRegionCustom').value = '';
+      }
+    };
+
     window.openNewPocketModal = function() {
       document.getElementById('pModalTitle').innerText = '✨ 新增名單';
       document.getElementById('pBtnSave').innerText = '加入名單';
       document.getElementById('pOriginalName').value = '';
       document.getElementById('pName').value = '';
       document.getElementById('pType').value = 'food';
-      document.getElementById('pRegionSelect').value = '弘大';
-      document.getElementById('customRegionGroup').style.display = 'none';
-      document.getElementById('pRegionCustom').value = '';
+      
+      // V39: 呼叫動態渲染選單，預設不帶選取值
+      populateRegionDropdown(null);
+      
       document.getElementById('pMapQ').value = '';
       document.getElementById('pNaverLink').value = '';
       document.getElementById('pDesc').value = '';
@@ -1286,20 +1348,10 @@
       document.getElementById('pBtnSave').innerText = '儲存修改';
       document.getElementById('pOriginalName').value = item.name;
       document.getElementById('pName').value = item.name;
-      
       document.getElementById('pType').value = item.type || 'food';
       
-      const regionSelect = document.getElementById('pRegionSelect');
-      const standardRegions = ["弘大", "延南", "聖水", "漢南", "島山", "明洞"];
-      if (standardRegions.includes(item.region)) {
-        regionSelect.value = item.region;
-        document.getElementById('customRegionGroup').style.display = 'none';
-        document.getElementById('pRegionCustom').value = '';
-      } else {
-        regionSelect.value = 'custom';
-        document.getElementById('customRegionGroup').style.display = 'block';
-        document.getElementById('pRegionCustom').value = item.region || '';
-      }
+      // V39: 呼叫動態渲染選單，並帶入現有區域
+      populateRegionDropdown(item.region);
 
       document.getElementById('pMapQ').value = item.mapQuery;
       document.getElementById('pNaverLink').value = item.naverLink || '';
@@ -1458,133 +1510,6 @@
         document.getElementById('infoDesc').innerText = '此項目可能是手動輸入，或已從口袋名單中刪除。';
       }
       document.getElementById('infoModal').style.display = 'flex';
-    };
-
-    window.openVoteModal = function(name) {
-      const item = pocketDB.find(p => p.name === name);
-      if(!item) return;
-      if(!item.wantToGo) item.wantToGo = [];
-      document.getElementById('vItemName').innerText = name;
-      document.getElementById('vItemNameHidden').value = name;
-      renderVoteButtons(item);
-      document.getElementById('voteModal').style.display = 'flex';
-    };
-
-    window.renderVoteButtons = function(item) {
-      const container = document.getElementById('voteCheckboxes');
-      let html = '';
-      travelers.forEach(t => {
-        const isSelected = item.wantToGo && item.wantToGo.includes(t);
-        const style = isSelected 
-          ? 'background: #ecc94b; color: #744210; border: 1px solid #d69e2e; font-weight:bold;' 
-          : 'background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;';
-        html += `<label style="${style}" onclick="toggleVote('${item.name.replace(/'/g, "\\'")}', '${t}')"><span>${t}</span></label>`;
-      });
-      container.innerHTML = html;
-    };
-
-    window.toggleVote = function(itemName, traveler) {
-      const item = pocketDB.find(p => p.name === itemName);
-      if(!item) return;
-      if(!item.wantToGo) item.wantToGo = [];
-      
-      if(item.wantToGo.includes(traveler)) {
-        item.wantToGo = item.wantToGo.filter(t => t !== traveler);
-      } else {
-        item.wantToGo.push(traveler);
-      }
-      renderVoteButtons(item);
-      syncWithCloud();
-    };
-
-    window.closeVoteModal = function() {
-      document.getElementById('voteModal').style.display = 'none';
-      let activeIndex = 0;
-      document.querySelectorAll('.tab').forEach((tab, idx) => {
-        if(tab.classList.contains('active')) activeIndex = idx;
-      });
-      renderApp();
-      switchTab(activeIndex);
-    };
-
-    window.openDayRegionModal = function(dayIndex) {
-      document.getElementById('drDayIndex').value = dayIndex;
-      document.getElementById('drSubtitle').value = appData[dayIndex].subtitle || '';
-      tempSelectedRegions = [...(appData[dayIndex].regions || [])];
-      renderDynamicRegionCheckboxes();
-      document.getElementById('dayRegionModal').style.display = 'flex';
-    };
-
-    window.toggleDynamicRegion = function(regionName) {
-      if (tempSelectedRegions.includes(regionName)) {
-        tempSelectedRegions = tempSelectedRegions.filter(r => r !== regionName);
-      } else {
-        tempSelectedRegions.push(regionName);
-      }
-      renderDynamicRegionCheckboxes(); 
-    };
-
-    window.renderDynamicRegionCheckboxes = function() {
-      const allRegions = getAllAvailableRegions();
-      const container = document.getElementById('drCheckboxesDynamicArea');
-      container.innerHTML = '';
-
-      if (tempSelectedRegions.length === 0) {
-        let html = '<div class="region-checkbox-group">';
-        allRegions.forEach(r => {
-          html += `<label style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;" onclick="toggleDynamicRegion('${r}')"><span>${r}</span></label>`;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-        return;
-      }
-
-      const origin = tempSelectedRegions[0];
-      let html = `<div style="font-size: 12px; color: #333; margin-bottom: 6px; font-weight: bold; margin-top: 4px;">✅ 已選區域 (依『${origin}』為基準計算距離)</div>`;
-      html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-      tempSelectedRegions.forEach(r => {
-        html += `<label style="background: var(--primary); color: white; border: 1px solid var(--primary);" onclick="toggleDynamicRegion('${r}')"><span style="font-weight:bold;">${r}</span></label>`;
-      });
-      html += '</div>';
-
-      let unselected = allRegions.filter(r => !tempSelectedRegions.includes(r));
-      let mapped = unselected.map(r => ({ name: r, dist: getDistance(origin, r) }));
-      mapped.sort((a, b) => a.dist - b.dist);
-
-      let nearby = mapped.filter(m => m.dist < 15);
-      let medium = mapped.filter(m => m.dist >= 15 && m.dist < 30);
-      let far = mapped.filter(m => m.dist >= 30 && m.dist !== 999);
-      let unknown = mapped.filter(m => m.dist === 999);
-
-      if (nearby.length > 0) {
-        html += '<div style="font-size: 12px; color: #166534; margin-bottom: 6px; font-weight: bold;">🟢 相鄰區域 (極近)</div>';
-        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-        nearby.forEach(m => { html += `<label style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
-        html += '</div>';
-      }
-      if (medium.length > 0) {
-        html += '<div style="font-size: 12px; color: #854d0e; margin-bottom: 6px; font-weight: bold;">🟡 中距離區域 (需搭車)</div>';
-        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-        medium.forEach(m => { html += `<label style="background: #fef9c3; color: #854d0e; border: 1px solid #fef08a;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
-        html += '</div>';
-      }
-      if (far.length > 0) {
-        html += '<div style="font-size: 12px; color: #991b1b; margin-bottom: 6px; font-weight: bold;">🔴 較遠區域 (跨越半個首爾)</div>';
-        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
-        far.forEach(m => { html += `<label style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
-        html += '</div>';
-      }
-      container.innerHTML = html;
-    };
-
-    window.saveDayRegions = function() {
-      const dayIndex = parseInt(document.getElementById('drDayIndex').value, 10);
-      appData[dayIndex].subtitle = document.getElementById('drSubtitle').value;
-      appData[dayIndex].regions = tempSelectedRegions;
-      if(currentPocketRegion[dayIndex] !== 'All_Global') currentPocketRegion[dayIndex] = 'All'; 
-      syncWithCloud();
-      document.getElementById('dayRegionModal').style.display = 'none';
-      renderApp(); switchTab(dayIndex);
     };
 
     loadFromCloud();
