@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V37 </title>
+  <title>Seoul Trip - V38 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -108,9 +108,10 @@
     .pocket-card .edit-btn { position: absolute; top: 10px; right: 34px; background: none; border: none; font-size: 14px; cursor: pointer; color: #aaa; padding: 0; z-index: 5; }
     .pocket-card .edit-btn:hover { color: var(--primary); }
 
-    .btn-add-global { display: block; width: 100%; padding: 12px; background: var(--primary-light); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; text-align: center; margin-top: 16px; }
-    .btn-add-block { display: block; width: 100%; padding: 12px; background: white; border: 2px dashed #ccc; color: #888; border-radius: 12px; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 24px; }
+    /* V38 強制將新增區間按鈕置頂，避免被其他元素覆蓋導致無法點擊 */
+    .btn-add-block { display: block; width: 100%; padding: 12px; background: white; border: 2px dashed #ccc; color: #888; border-radius: 12px; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 24px; position: relative; z-index: 10; }
     .btn-add-block:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-add-global { display: block; width: 100%; padding: 12px; background: var(--primary-light); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; text-align: center; margin-top: 16px; position: relative; z-index: 10; }
 
     .sortable-ghost { opacity: 0.4; background: #ffe3e3 !important; }
     .sortable-drag { opacity: 0.9; transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
@@ -179,7 +180,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V37 </p>
+      <p>V38 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -304,7 +305,7 @@
 
   <div class="modal-overlay" id="dayRegionModal"><div class="modal"><h3 style="margin-top:0;">⚙️ 設定當日目標區域</h3><input type="hidden" id="drDayIndex"><div class="form-group"><label>當日副標題 (選填)</label><input type="text" id="drSubtitle" placeholder="例如：逛街與烤肉之夜"></div><div class="form-group"><label>勾選包含區域 (會依據第一個選項動態顯示距離遠近)</label><div id="drCheckboxesDynamicArea"></div></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('dayRegionModal').style.display='none'">取消</button><button class="btn-save" onclick="saveDayRegions()">儲存設定</button></div></div></div>
   <div class="modal-overlay" id="voteModal"><div class="modal"><h3 style="margin-top:0; font-size:18px;">🙋‍♂️ 誰想去 <strong id="vItemName" style="color:var(--primary)"></strong>？</h3><input type="hidden" id="vItemNameHidden"><div class="region-checkbox-group" id="voteCheckboxes" style="margin-bottom:12px;"></div><div class="modal-actions"><button class="btn-save" style="width:100%" onclick="closeVoteModal()">完成</button></div></div></div>
-  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">編輯區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="bMapQ" placeholder="輸入關鍵字"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
+  <div class="modal-overlay" id="blockModal"><div class="modal"><h3 style="margin-top:0;" id="bModalTitle">➕ 新增區間</h3><input type="hidden" id="bDayIndex"><input type="hidden" id="bEvIndex"><div class="form-group"><label>時間</label><input type="text" id="bTime"></div><div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div><div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="bMapQ" placeholder="輸入關鍵字"></div><div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="bDesc" rows="3"></textarea></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('blockModal').style.display='none'">取消</button><button class="btn-save" onclick="saveBlock()">儲存</button></div></div></div>
   
   <div class="modal-overlay" id="pocketModal">
     <div class="modal">
@@ -567,7 +568,7 @@
               ${subItemsHtml}
               <div class="action-btns">
                 <button class="btn-small" style="background:#8b5cf6; color:white;" onclick="event.stopPropagation(); openExpenseModal('${safeTitle}')">💸 記帳</button>
-                <button class="btn-small" onclick="event.stopPropagation(); openBlockModal(${dayIndex}, ${evIndex})">編輯</button>
+                <button class="btn-small" onclick="event.stopPropagation(); openBlockModal(${dayIndex}, '${evIndex}')">編輯</button>
                 <button class="btn-small danger" onclick="event.stopPropagation(); deleteEvent(${dayIndex}, ${evIndex})">刪除</button>
               </div>
             </div>`;
@@ -613,6 +614,65 @@
         initSortable(dayIndex);
       });
     }
+
+    // V38: 徹底修正 Modal 觸發時引數遺失或受干擾導致的 Undefined 錯誤
+    window.openBlockModal = function(dayIndex, evIndex) {
+      document.getElementById('bDayIndex').value = dayIndex;
+      
+      // 清空預設值
+      document.getElementById('bEvIndex').value = '';
+      document.getElementById('bTime').value = '';
+      document.getElementById('bTitle').value = '';
+      document.getElementById('bMapQ').value = '';
+      document.getElementById('bDesc').value = '';
+      
+      // 若為編輯模式 (判斷 evIndex 是否為合法數值)
+      if (evIndex !== undefined && evIndex !== null && evIndex !== '' && !isNaN(evIndex) && typeof evIndex !== 'object') {
+        const idx = parseInt(evIndex, 10);
+        document.getElementById('bModalTitle').innerText = '✏️ 編輯區間';
+        
+        if (appData[dayIndex] && appData[dayIndex].events[idx]) {
+          const ev = appData[dayIndex].events[idx];
+          document.getElementById('bEvIndex').value = idx;
+          document.getElementById('bTime').value = ev.time || '';
+          document.getElementById('bTitle').value = ev.title || '';
+          document.getElementById('bMapQ').value = ev.mapQuery || '';
+          document.getElementById('bDesc').value = ev.desc || '';
+        }
+      } else {
+        // 新增模式
+        document.getElementById('bModalTitle').innerText = '➕ 新增區間';
+      }
+      
+      document.getElementById('blockModal').style.display = 'flex';
+    };
+
+    window.saveBlock = function() {
+      const dayIndex = parseInt(document.getElementById('bDayIndex').value, 10);
+      const evIndexStr = document.getElementById('bEvIndex').value;
+      
+      const newBlock = {
+        time: document.getElementById('bTime').value || '12:00',
+        title: document.getElementById('bTitle').value || '新區間',
+        mapQuery: document.getElementById('bMapQ').value || '',
+        desc: document.getElementById('bDesc').value || ''
+      };
+      
+      if (evIndexStr === '') {
+        newBlock.subItems = []; 
+        appData[dayIndex].events.push(newBlock);
+      } else {
+        const idx = parseInt(evIndexStr, 10);
+        newBlock.subItems = appData[dayIndex].events[idx].subItems || [];
+        appData[dayIndex].events[idx] = newBlock;
+      }
+      
+      appData[dayIndex].events.sort((a, b) => a.time.localeCompare(b.time));
+      syncWithCloud(); 
+      document.getElementById('blockModal').style.display = 'none';
+      renderApp(); 
+      switchTab(dayIndex);
+    };
 
     window.togglePocket = function(dayIndex) {
       const el = document.getElementById(`pocket-content-${dayIndex}`);
@@ -713,19 +773,11 @@
       }
     }
 
-    function toggleExpenseDrawer() {
+    window.toggleExpenseDrawer = function() {
       document.getElementById('expenseDrawer').classList.toggle('open');
-    }
+    };
 
-    function toggleCheckLabel(checkbox) {
-      if (checkbox.checked) {
-        checkbox.parentElement.classList.add('selected');
-      } else {
-        checkbox.parentElement.classList.remove('selected');
-      }
-    }
-
-    function toggleCurrencyMode() {
+    window.toggleCurrencyMode = function() {
       const cur = document.getElementById('expCurrency').value;
       const rateGroup = document.getElementById('krwRateGroup');
       if (cur === 'TWD') {
@@ -733,9 +785,9 @@
       } else {
         rateGroup.style.display = 'block';
       }
-    }
+    };
 
-    window.applyLiveRate = async function() {
+    window.applyLiveRate = async function(event) {
       const btn = event.target;
       const oldText = btn.innerText;
       btn.innerText = '⏳';
@@ -747,7 +799,7 @@
       btn.innerText = oldText;
     };
 
-    function renderParticipantList(selectedData = null) {
+    window.renderParticipantList = function(selectedData = null) {
       const container = document.getElementById('expParticipantsList');
       let html = '';
       travelers.forEach(t => {
@@ -785,7 +837,7 @@
         `;
       });
       container.innerHTML = html;
-    }
+    };
 
     window.toggleWeightRow = function(name, checkbox) {
       const row = document.getElementById(`row-${name}`);
@@ -934,7 +986,7 @@
       }
     };
 
-    function renderExpenseDrawer() {
+    window.renderExpenseDrawer = function() {
       const listContainer = document.getElementById('expenseListContainer');
       const settlementContainer = document.getElementById('settlementContainer');
       const archivedContainer = document.getElementById('archivedPhasesContainer');
@@ -1109,7 +1161,7 @@
       } else {
         archivedContainer.style.display = 'none';
       }
-    }
+    };
 
     window.switchTab = function(activeIndex) {
       const targetIndex = parseInt(activeIndex, 10);
@@ -1122,15 +1174,15 @@
       }
     };
 
-    function switchPocketRegion(dayIndex, region) { currentPocketRegion[dayIndex] = region; renderPocketGrid(dayIndex, 'All'); }
-    function switchPocketTab(dayIndex, type) {
+    window.switchPocketRegion = function(dayIndex, region) { currentPocketRegion[dayIndex] = region; renderPocketGrid(dayIndex, 'All'); };
+    window.switchPocketTab = function(dayIndex, type) {
       currentTabIndices[dayIndex] = type;
       const tabs = document.querySelectorAll(`#content-${dayIndex} .p-tab`);
       tabs[0].classList.toggle('active', type === 'food'); tabs[1].classList.toggle('active', type === 'shop');
       renderPocketGrid(dayIndex, 'All');
-    }
+    };
 
-    function renderPocketGrid(dayIndex, selectedCategory = 'All') {
+    window.renderPocketGrid = function(dayIndex, selectedCategory = 'All') {
       const filtersEl = document.getElementById(`pocket-filters-${dayIndex}`);
       const gridEl = document.getElementById(`pocket-grid-${dayIndex}`);
       if(!filtersEl || !gridEl) return;
@@ -1144,7 +1196,6 @@
       else if (selectedFilter === 'All') { baseFiltered = baseFiltered.filter(item => dayRegions.includes(item.region)); } 
       else { baseFiltered = baseFiltered.filter(item => item.region === selectedFilter); }
       
-      // V37: 自動優先級排序 (1: 想去未加入, 2: 普通, 3: 已加入)
       baseFiltered.sort((a, b) => {
         const aScheduled = getScheduledDays(a.name).length > 0;
         const bScheduled = getScheduledDays(b.name).length > 0;
@@ -1211,7 +1262,7 @@
           </div>`;
       });
       gridEl.innerHTML = cardsHtml;
-    }
+    };
 
     window.openNewPocketModal = function() {
       document.getElementById('pModalTitle').innerText = '✨ 新增名單';
@@ -1407,6 +1458,133 @@
         document.getElementById('infoDesc').innerText = '此項目可能是手動輸入，或已從口袋名單中刪除。';
       }
       document.getElementById('infoModal').style.display = 'flex';
+    };
+
+    window.openVoteModal = function(name) {
+      const item = pocketDB.find(p => p.name === name);
+      if(!item) return;
+      if(!item.wantToGo) item.wantToGo = [];
+      document.getElementById('vItemName').innerText = name;
+      document.getElementById('vItemNameHidden').value = name;
+      renderVoteButtons(item);
+      document.getElementById('voteModal').style.display = 'flex';
+    };
+
+    window.renderVoteButtons = function(item) {
+      const container = document.getElementById('voteCheckboxes');
+      let html = '';
+      travelers.forEach(t => {
+        const isSelected = item.wantToGo && item.wantToGo.includes(t);
+        const style = isSelected 
+          ? 'background: #ecc94b; color: #744210; border: 1px solid #d69e2e; font-weight:bold;' 
+          : 'background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;';
+        html += `<label style="${style}" onclick="toggleVote('${item.name.replace(/'/g, "\\'")}', '${t}')"><span>${t}</span></label>`;
+      });
+      container.innerHTML = html;
+    };
+
+    window.toggleVote = function(itemName, traveler) {
+      const item = pocketDB.find(p => p.name === itemName);
+      if(!item) return;
+      if(!item.wantToGo) item.wantToGo = [];
+      
+      if(item.wantToGo.includes(traveler)) {
+        item.wantToGo = item.wantToGo.filter(t => t !== traveler);
+      } else {
+        item.wantToGo.push(traveler);
+      }
+      renderVoteButtons(item);
+      syncWithCloud();
+    };
+
+    window.closeVoteModal = function() {
+      document.getElementById('voteModal').style.display = 'none';
+      let activeIndex = 0;
+      document.querySelectorAll('.tab').forEach((tab, idx) => {
+        if(tab.classList.contains('active')) activeIndex = idx;
+      });
+      renderApp();
+      switchTab(activeIndex);
+    };
+
+    window.openDayRegionModal = function(dayIndex) {
+      document.getElementById('drDayIndex').value = dayIndex;
+      document.getElementById('drSubtitle').value = appData[dayIndex].subtitle || '';
+      tempSelectedRegions = [...(appData[dayIndex].regions || [])];
+      renderDynamicRegionCheckboxes();
+      document.getElementById('dayRegionModal').style.display = 'flex';
+    };
+
+    window.toggleDynamicRegion = function(regionName) {
+      if (tempSelectedRegions.includes(regionName)) {
+        tempSelectedRegions = tempSelectedRegions.filter(r => r !== regionName);
+      } else {
+        tempSelectedRegions.push(regionName);
+      }
+      renderDynamicRegionCheckboxes(); 
+    };
+
+    window.renderDynamicRegionCheckboxes = function() {
+      const allRegions = getAllAvailableRegions();
+      const container = document.getElementById('drCheckboxesDynamicArea');
+      container.innerHTML = '';
+
+      if (tempSelectedRegions.length === 0) {
+        let html = '<div class="region-checkbox-group">';
+        allRegions.forEach(r => {
+          html += `<label style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;" onclick="toggleDynamicRegion('${r}')"><span>${r}</span></label>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+        return;
+      }
+
+      const origin = tempSelectedRegions[0];
+      let html = `<div style="font-size: 12px; color: #333; margin-bottom: 6px; font-weight: bold; margin-top: 4px;">✅ 已選區域 (依『${origin}』為基準計算距離)</div>`;
+      html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
+      tempSelectedRegions.forEach(r => {
+        html += `<label style="background: var(--primary); color: white; border: 1px solid var(--primary);" onclick="toggleDynamicRegion('${r}')"><span style="font-weight:bold;">${r}</span></label>`;
+      });
+      html += '</div>';
+
+      let unselected = allRegions.filter(r => !tempSelectedRegions.includes(r));
+      let mapped = unselected.map(r => ({ name: r, dist: getDistance(origin, r) }));
+      mapped.sort((a, b) => a.dist - b.dist);
+
+      let nearby = mapped.filter(m => m.dist < 15);
+      let medium = mapped.filter(m => m.dist >= 15 && m.dist < 30);
+      let far = mapped.filter(m => m.dist >= 30 && m.dist !== 999);
+      let unknown = mapped.filter(m => m.dist === 999);
+
+      if (nearby.length > 0) {
+        html += '<div style="font-size: 12px; color: #166534; margin-bottom: 6px; font-weight: bold;">🟢 相鄰區域 (極近)</div>';
+        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
+        nearby.forEach(m => { html += `<label style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
+        html += '</div>';
+      }
+      if (medium.length > 0) {
+        html += '<div style="font-size: 12px; color: #854d0e; margin-bottom: 6px; font-weight: bold;">🟡 中距離區域 (需搭車)</div>';
+        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
+        medium.forEach(m => { html += `<label style="background: #fef9c3; color: #854d0e; border: 1px solid #fef08a;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
+        html += '</div>';
+      }
+      if (far.length > 0) {
+        html += '<div style="font-size: 12px; color: #991b1b; margin-bottom: 6px; font-weight: bold;">🔴 較遠區域 (跨越半個首爾)</div>';
+        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
+        far.forEach(m => { html += `<label style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
+        html += '</div>';
+      }
+      container.innerHTML = html;
+    };
+
+    window.saveDayRegions = function() {
+      const dayIndex = parseInt(document.getElementById('drDayIndex').value, 10);
+      appData[dayIndex].subtitle = document.getElementById('drSubtitle').value;
+      appData[dayIndex].regions = tempSelectedRegions;
+      if(currentPocketRegion[dayIndex] !== 'All_Global') currentPocketRegion[dayIndex] = 'All'; 
+      syncWithCloud();
+      document.getElementById('dayRegionModal').style.display = 'none';
+      renderApp(); switchTab(dayIndex);
     };
 
     loadFromCloud();
