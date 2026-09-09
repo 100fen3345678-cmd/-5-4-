@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V40 </title>
+  <title>Seoul Trip - V41 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -163,13 +163,41 @@
 
     #infoDesc { white-space: pre-wrap; word-break: break-word; }
 
+    /* V41: 手機版 UI 大瘦身與解釘選 */
     @media (max-width: 768px) {
-      .split-layout { flex-direction: column; padding: 12px; gap: 12px; }
-      .map-pane { position: sticky; top: 110px; height: 35vh; width: 100%; z-index: 90; border-radius: 12px; }
-      .list-pane { width: 100%; }
-      .header { top: -1px; }
+      /* 1. Header 瘦身與取消釘選 */
+      .header { position: relative; top: 0; padding: 10px 12px; z-index: 10; }
+      .header h1 { font-size: 18px; margin-bottom: 2px; }
+      .header p { font-size: 11px; }
+      
+      /* 2. Tabs 取代 Header 成為頂部釘選層 */
+      .tabs { top: 0; padding: 0; }
+      .tab { padding: 12px 16px; font-size: 14px; }
+      
+      /* 3. 地圖取消釘選，調整為適當高度，讓出閱讀空間 */
+      .split-layout { flex-direction: column; padding: 10px; gap: 12px; }
+      .map-pane { position: relative; top: 0; height: 30vh; width: 100%; border-radius: 12px; margin-bottom: 4px; }
+      .list-pane { width: 100%; min-height: auto; }
       .map-toolbar { padding: 8px 12px; }
       .naver-list-btn, .naver-toilet-btn { font-size: 12px; padding: 6px 10px; }
+      
+      /* 4. Timeline 區塊瘦身 (減小 Padding 與字體) */
+      .timeline-item { padding: 12px 12px 12px 40px; margin-bottom: 12px; }
+      .block-drag-handle { width: 30px; font-size: 14px; }
+      .timeline-header { gap: 10px; flex-direction: column; }
+      .time-col { min-width: auto; font-size: 14px; padding-top: 0; }
+      .content-col { padding-right: 0; }
+      .content-col h3 { font-size: 15px; margin-bottom: 2px; }
+      .content-col p { font-size: 13px; }
+      
+      /* 5. 行動按鈕防重疊：改為行內相對定位 */
+      .action-btns { position: relative; top: auto; right: auto; justify-content: flex-end; margin-top: 10px; width: 100%; }
+      
+      /* 6. 口袋名單卡片瘦身 */
+      .pocket-card { padding: 10px 10px 10px 40px; }
+      .pocket-drag-handle { width: 30px; font-size: 14px; }
+      .pocket-card h4 { margin: 0 0 4px 0; font-size: 14px; }
+      .pocket-card p { font-size: 12px; margin-bottom: 30px; }
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -179,7 +207,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V40 </p>
+      <p>V41 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -302,32 +330,9 @@
     </div>
   </div>
 
-  <!-- V40: 設定當日目標區域 Modal -->
-  <div class="modal-overlay" id="dayRegionModal">
-    <div class="modal">
-      <h3 style="margin-top:0;">⚙️ 設定當日目標區域</h3>
-      <input type="hidden" id="drDayIndex">
-      <div class="form-group"><label>當日副標題 (選填)</label><input type="text" id="drSubtitle" placeholder="例如：逛街與烤肉之夜"></div>
-      <div class="form-group"><label>勾選包含區域 (會依據第一個選項動態顯示距離遠近)</label><div id="drCheckboxesDynamicArea"></div></div>
-      <div class="modal-actions">
-        <button class="btn-cancel" onclick="document.getElementById('dayRegionModal').style.display='none'">取消</button>
-        <button class="btn-save" onclick="saveDayRegions()">儲存設定</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- V40: 想去投票 Modal -->
-  <div class="modal-overlay" id="voteModal">
-    <div class="modal">
-      <h3 style="margin-top:0; font-size:18px;">🙋‍♂️ 誰想去 <strong id="vItemName" style="color:var(--primary)"></strong>？</h3>
-      <input type="hidden" id="vItemNameHidden">
-      <div class="region-checkbox-group" id="voteCheckboxes" style="margin-bottom:12px;"></div>
-      <div class="modal-actions">
-        <button class="btn-save" style="width:100%" onclick="closeVoteModal()">完成</button>
-      </div>
-    </div>
-  </div>
-
+  <div class="modal-overlay" id="dayRegionModal"><div class="modal"><h3 style="margin-top:0;">⚙️ 設定當日目標區域</h3><input type="hidden" id="drDayIndex"><div class="form-group"><label>當日副標題 (選填)</label><input type="text" id="drSubtitle" placeholder="例如：逛街與烤肉之夜"></div><div class="form-group"><label>勾選包含區域 (會依據第一個選項動態顯示距離遠近)</label><div id="drCheckboxesDynamicArea"></div></div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById('dayRegionModal').style.display='none'">取消</button><button class="btn-save" onclick="saveDayRegions()">儲存設定</button></div></div></div>
+  <div class="modal-overlay" id="voteModal"><div class="modal"><h3 style="margin-top:0; font-size:18px;">🙋‍♂️ 誰想去 <strong id="vItemName" style="color:var(--primary)"></strong>？</h3><input type="hidden" id="vItemNameHidden"><div class="region-checkbox-group" id="voteCheckboxes" style="margin-bottom:12px;"></div><div class="modal-actions"><button class="btn-save" style="width:100%" onclick="closeVoteModal()">完成</button></div></div></div>
+  
   <div class="modal-overlay" id="blockModal">
     <div class="modal">
       <h3 style="margin-top:0;" id="bModalTitle">➕ 新增區間</h3>
@@ -485,7 +490,6 @@
     const contentContainer = document.getElementById('content-container');
     const mapIframe = document.getElementById('map-iframe');
 
-    // V40 修復：動態合併預設區域與口袋名單內的自訂區域
     function getAllAvailableRegions() {
       const regions = new Set(["弘大", "延南", "聖水", "漢南", "島山", "明洞"]);
       pocketDB.forEach(item => { 
@@ -661,11 +665,10 @@
         contentContainer.appendChild(content);
         
         renderPocketGrid(dayIndex, 'All');
-        initSortable(dayIndex);
+        initSortable(dayIndex); // 每次渲染呼叫以綁定 Sortable
       });
     }
 
-    // V40 復原：這 4 個是控制區域設定的核心函式
     window.openDayRegionModal = function(dayIndex) {
       document.getElementById('drDayIndex').value = dayIndex;
       document.getElementById('drSubtitle').value = appData[dayIndex].subtitle || '';
@@ -745,7 +748,6 @@
       renderApp(); switchTab(dayIndex);
     };
 
-    // V40 復原：這 4 個是控制想去投票的核心函式
     window.openVoteModal = function(name) {
       const item = pocketDB.find(p => p.name === name);
       if(!item) return;
@@ -792,7 +794,6 @@
       renderApp();
       switchTab(activeIndex);
     };
-
 
     window.openBlockModal = function(dayIndex, evIndex) {
       document.getElementById('bDayIndex').value = dayIndex;
@@ -891,16 +892,18 @@
       navigator.clipboard.writeText(box.innerText).then(() => {
         alert("已成功複製整日快照文字到剪貼簿！");
       }).catch(err => {
-        alert("複製失敗，請手手動選取複製。");
+        alert("複製失敗，請手動選取複製。");
       });
     };
 
+    // V41 升級：加入 forceFallback 與 bubbleScroll 徹底解決桌面版拖曳無法捲動頁面的問題
     function initSortable(dayIndex) {
       const listEl = document.getElementById(`timeline-list-${dayIndex}`);
       if (listEl) {
         Sortable.create(listEl, {
           animation: 150, handle: '.block-drag-handle',
-          scroll: true, scrollSensitivity: 60, scrollSpeed: 15,
+          scroll: true, scrollSensitivity: 80, scrollSpeed: 20,
+          forceFallback: true, bubbleScroll: true,
           onEnd: function (evt) {
             const movedItem = appData[dayIndex].events.splice(evt.oldIndex, 1)[0];
             appData[dayIndex].events.splice(evt.newIndex, 0, movedItem);
@@ -912,7 +915,8 @@
       document.querySelectorAll(`#content-${dayIndex} .sub-items-container`).forEach(container => {
         Sortable.create(container, {
           group: 'shared-subitems', animation: 150, handle: '.chip-drag-handle',
-          scroll: true, scrollSensitivity: 60, scrollSpeed: 15,
+          scroll: true, scrollSensitivity: 80, scrollSpeed: 20,
+          forceFallback: true, bubbleScroll: true,
           onAdd: function (evt) {
             if (evt.from.classList.contains('pocket-grid')) {
               const toDay = parseInt(evt.to.getAttribute('data-day'));
@@ -946,7 +950,8 @@
         Sortable.create(pocketGrid, {
           group: { name: 'shared-subitems', pull: 'clone', put: false },
           sort: false, handle: '.pocket-drag-handle', animation: 150,
-          scroll: true, scrollSensitivity: 60, scrollSpeed: 15
+          scroll: true, scrollSensitivity: 80, scrollSpeed: 20,
+          forceFallback: true, bubbleScroll: true
         });
       }
     }
