@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V45 </title>
+  <title>Seoul Trip - V46 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -16,8 +16,8 @@
     .header p { margin: 0; font-size: 13px; opacity: 0.9; }
     
     .header-btns { display: flex; gap: 8px; align-items: center; }
-    .sync-btn, .expense-toggle-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
-    .sync-btn:hover, .expense-toggle-btn:hover { background: rgba(255,255,255,0.3); }
+    .sync-btn, .expense-toggle-btn, .announce-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+    .sync-btn:hover, .expense-toggle-btn:hover, .announce-btn:hover { background: rgba(255,255,255,0.3); }
 
     .tabs { display: flex; overflow-x: auto; background: white; position: sticky; top: 60px; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); scrollbar-width: none; }
     .tabs::-webkit-scrollbar { display: none; }
@@ -200,14 +200,55 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V45 </p>
+      <p>V46 </p>
     </div>
     <div class="header-btns">
+      <button class="announce-btn" onclick="openAnnounceModal()">📢 公告</button>
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
       <button class="sync-btn" onclick="loadFromCloud()">🔄 同步</button>
     </div>
   </div>
   <div class="tabs" id="tabs-container"></div>
+
+  <!-- V46: 專屬公告 Modal -->
+  <div class="modal-overlay" id="announceModal">
+    <div class="modal" style="max-width: 500px;">
+      <h3 style="margin-top:0; color:var(--primary);">📢 旅遊公告 / 訂位資訊</h3>
+      
+      <!-- 公告列表區 -->
+      <div id="announceListContainer" style="margin-bottom: 20px; max-height: 40vh; overflow-y: auto; padding-right: 4px;">
+        <!-- JS 動態產生公告 -->
+      </div>
+      
+      <hr style="border:0; border-top:1px dashed #ccc; margin: 16px 0;">
+      
+      <!-- 新增公告表單區 -->
+      <h4 style="margin-top:0;">➕ 新增公告</h4>
+      <div class="form-group">
+        <label>標題 / 餐廳名稱</label>
+        <input type="text" id="annTitle" placeholder="例如：10/16 荒謬的生肉 訂位">
+      </div>
+      <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label>時間 (選填)</label>
+            <input type="text" id="annTime" placeholder="例如：18:30">
+          </div>
+          <div class="form-group" style="flex:2;">
+            <label>相關網址 (選填)</label>
+            <input type="text" id="annLink" placeholder="例如：CatchTable 訂位連結...">
+          </div>
+      </div>
+      <div class="form-group">
+        <label>備註內容</label>
+        <textarea id="annDesc" rows="2" placeholder="預約代號、注意事項、集合地點..."></textarea>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="document.getElementById('announceModal').style.display='none'">關閉</button>
+        <button class="btn-save" onclick="saveAnnounce()">發佈公告</button>
+      </div>
+    </div>
+  </div>
 
   <div class="expense-drawer" id="expenseDrawer">
     <div class="drawer-header">
@@ -357,7 +398,6 @@
     </div>
   </div>
   
-  <!-- V45: 口袋名單輸入框加入 oninput 觸發即時偵測 -->
   <div class="modal-overlay" id="pocketModal">
     <div class="modal">
       <h3 style="margin-top:0;" id="pModalTitle">✨ 新增名單</h3>
@@ -472,6 +512,9 @@
     let pocketDB = [];
     let expensesDB = []; 
     let archivedPhases = []; 
+    // V46: 新增全域公告資料庫
+    let announcementsDB = [];
+
     let currentTabIndices = { 0: 'food', 1: 'food', 2: 'food', 3: 'food', 4: 'food' };
     let currentPocketRegion = {}; 
     let tempSelectedRegions = [];
@@ -542,6 +585,8 @@
           pocketDB = data.record.pocketDB || [];
           expensesDB = data.record.expensesDB || [];
           archivedPhases = data.record.archivedPhases || [];
+          // V46: 讀取公告資料庫
+          announcementsDB = data.record.announcementsDB || [];
         }
       } catch (e) { console.error('載入失敗', e); }
       renderApp();
@@ -554,7 +599,8 @@
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify({ appData, pocketDB, expensesDB, archivedPhases })
+          // V46: 同步時包含公告資料庫
+          body: JSON.stringify({ appData, pocketDB, expensesDB, archivedPhases, announcementsDB })
         });
       } catch (e) { console.error('同步錯誤', e); }
       document.querySelector('.sync-btn').innerText = '🔄 同步最新';
@@ -676,6 +722,63 @@
         initSortable(dayIndex); 
       });
     }
+
+    // V46: 公告系統功能實作
+    window.openAnnounceModal = function() {
+      renderAnnounceList();
+      document.getElementById('announceModal').style.display = 'flex';
+    };
+
+    window.renderAnnounceList = function() {
+      const container = document.getElementById('announceListContainer');
+      if (announcementsDB.length === 0) {
+        container.innerHTML = '<p style="color:#888; font-size:13px; text-align:center;">目前沒有公告或預約資訊。</p>';
+        return;
+      }
+      let html = '';
+      announcementsDB.forEach((ann, idx) => {
+        let linkHtml = ann.link ? `<a href="${ann.link}" target="_blank" style="display:inline-block; margin-top:8px; font-size:12px; background:#e0f2fe; color:#0369a1; padding:6px 10px; border-radius:4px; text-decoration:none; font-weight:bold;">🔗 前往連結</a>` : '';
+        let timeHtml = ann.time ? `<span style="font-size:12px; background:#fef08a; color:#854d0e; padding:2px 6px; border-radius:4px; font-weight:bold; margin-right:8px; vertical-align:middle;">🕒 ${ann.time}</span>` : '';
+        html += `
+          <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px; margin-bottom:10px; position:relative;">
+            <button class="del-btn" onclick="deleteAnnounce(${idx})" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:14px; cursor:pointer; color:#aaa; padding:0;">🗑️</button>
+            <h4 style="margin:0 0 8px 0; font-size:15px; padding-right:20px; color:var(--primary);">${timeHtml}${ann.title}</h4>
+            <p style="margin:0; font-size:13px; color:#475569; white-space:pre-wrap; word-break:break-word;">${linkify(ann.desc)}</p>
+            ${linkHtml}
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    };
+
+    window.saveAnnounce = function() {
+      const title = document.getElementById('annTitle').value.trim();
+      const time = document.getElementById('annTime').value.trim();
+      const link = document.getElementById('annLink').value.trim();
+      const desc = document.getElementById('annDesc').value.trim();
+
+      if (!title) return alert("請輸入公告或預約標題！");
+
+      announcementsDB.push({ title, time, link, desc });
+      syncWithCloud();
+
+      // 清空輸入框
+      document.getElementById('annTitle').value = '';
+      document.getElementById('annTime').value = '';
+      document.getElementById('annLink').value = '';
+      document.getElementById('annDesc').value = '';
+      
+      renderAnnounceList();
+    };
+
+    window.deleteAnnounce = function(idx) {
+      if (confirm("確定要刪除這則公告嗎？")) {
+        announcementsDB.splice(idx, 1);
+        syncWithCloud();
+        renderAnnounceList();
+      }
+    };
+
 
     window.openDayRegionModal = function(dayIndex) {
       document.getElementById('drDayIndex').value = dayIndex;
@@ -1492,11 +1595,9 @@
       }
     };
 
-    // V45: 新增自動偵測區域功能 (即時掃描輸入框文字)
     window.autoDetectRegion = function() {
       const select = document.getElementById('pRegionSelect');
       
-      // 如果使用者已經在自訂區域輸入，就不要自動切換干擾他
       if (select.value === 'custom') return;
 
       const text = (
@@ -1511,7 +1612,6 @@
         if (text.includes(r.toLowerCase())) {
           if (select.value !== r) {
             select.value = r;
-            // 給予視覺回饋，讓使用者知道系統幫他自動選擇了
             select.style.transition = "background-color 0.3s";
             select.style.backgroundColor = "#dcfce7"; 
             setTimeout(() => select.style.backgroundColor = "#fff", 800);
