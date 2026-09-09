@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V44 </title>
+  <title>Seoul Trip - V45 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -200,7 +200,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V44 </p>
+      <p>V45 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -357,11 +357,12 @@
     </div>
   </div>
   
+  <!-- V45: 口袋名單輸入框加入 oninput 觸發即時偵測 -->
   <div class="modal-overlay" id="pocketModal">
     <div class="modal">
       <h3 style="margin-top:0;" id="pModalTitle">✨ 新增名單</h3>
       <input type="hidden" id="pOriginalName">
-      <div class="form-group"><label>名稱</label><input type="text" id="pName"></div>
+      <div class="form-group"><label>名稱</label><input type="text" id="pName" oninput="autoDetectRegion()"></div>
       
       <div style="display: flex; gap: 10px;">
         <div class="form-group" style="flex: 1;">
@@ -382,9 +383,9 @@
         <input type="text" id="pRegionCustom" placeholder="例如: 安國、江南...">
       </div>
 
-      <div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="pMapQ" placeholder="例如: 弘大 豬肉商會"></div>
+      <div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="pMapQ" placeholder="例如: 弘大 豬肉商會" oninput="autoDetectRegion()"></div>
       <div class="form-group"><label>Naver Map 專屬連結 (選填)</label><input type="text" id="pNaverLink" placeholder="例如: https://naver.me/..."></div>
-      <div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2"></textarea></div>
+      <div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2" oninput="autoDetectRegion()"></textarea></div>
       
       <div class="modal-actions">
         <button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button>
@@ -453,17 +454,11 @@
       return safeText.replace(urlRegex, '<a href="$1" target="_blank" onclick="event.stopPropagation()" style="color: #3182ce; text-decoration: underline; font-weight: bold;">$1</a>');
     };
 
-    // V44: 內建首爾全知地圖座標庫 (包含 50+ 個主要區域)
     const seoulCoords = {
-      // 核心西區
       "望遠": {x: 15, y: 50}, "弘大": {x: 20, y: 50}, "延南": {x: 21, y: 52}, "合井": {x: 19, y: 48}, "上水": {x: 20, y: 47}, "新村": {x: 25, y: 50}, "梨大": {x: 27, y: 50}, "麻浦": {x: 25, y: 42}, "孔德": {x: 28, y: 44}, "汝矣島": {x: 25, y: 35}, "永登浦": {x: 20, y: 30}, "文來": {x: 18, y: 28}, "仙遊島": {x: 18, y: 38},
-      // 核心中區/北區
       "明洞": {x: 50, y: 48}, "鐘路": {x: 50, y: 55}, "益善洞": {x: 51, y: 56}, "安國": {x: 50, y: 57}, "景福宮": {x: 48, y: 56}, "光化門": {x: 49, y: 54}, "乙支路": {x: 51, y: 50}, "忠武路": {x: 51, y: 48}, "東大門": {x: 55, y: 52}, "新堂": {x: 56, y: 50}, "首爾站": {x: 45, y: 48}, "南大門": {x: 47, y: 47}, "梨泰院": {x: 50, y: 35}, "漢南": {x: 52, y: 34}, "龍山": {x: 45, y: 35}, "三角地": {x: 45, y: 38}, "解放村": {x: 48, y: 37}, "惠化": {x: 55, y: 58}, "大學路": {x: 55, y: 58}, "城北": {x: 58, y: 65},
-      // 核心南區/江南
       "江南": {x: 60, y: 20}, "驛三": {x: 62, y: 20}, "宣陵": {x: 64, y: 21}, "三成": {x: 66, y: 22}, "狎鷗亭": {x: 58, y: 28}, "新沙": {x: 56, y: 28}, "島山": {x: 59, y: 28}, "清潭": {x: 62, y: 26}, "瑞草": {x: 56, y: 18}, "盤浦": {x: 55, y: 25}, "高速巴士客運站": {x: 54, y: 23}, "蠶室": {x: 80, y: 20}, "松坡": {x: 82, y: 18}, "樂天世界": {x: 80, y: 19},
-      // 核心東區
       "聖水": {x: 70, y: 45}, "首爾林": {x: 68, y: 43}, "建大": {x: 75, y: 42}, "往十里": {x: 65, y: 48},
-      // 郊區與機場
       "金浦": {x: -10, y: 45}, "金浦機場": {x: -10, y: 45}, "仁川": {x: -40, y: 30}, "仁川機場": {x: -60, y: 30}, "冠岳": {x: 35, y: 5}, "九老": {x: 10, y: 20}, "加山": {x: 12, y: 18}, "恩平": {x: 30, y: 70}, "蘆原": {x: 65, y: 75}, "江東": {x: 90, y: 30}
     };
 
@@ -489,18 +484,15 @@
     const contentContainer = document.getElementById('content-container');
     const mapIframe = document.getElementById('map-iframe');
 
-    // V44 升級：只抓取「真的有在使用」的區域，保持選單清爽不臃腫
     function getAllAvailableRegions() {
       const regions = new Set();
       
-      // 1. 掃描口袋名單中有出現的區域
       pocketDB.forEach(item => { 
         if (item.region && item.region !== '其他' && item.region.trim() !== '') {
           regions.add(item.region); 
         }
       });
 
-      // 2. 掃描已經排入行程的區域 (防呆)
       appData.forEach(day => {
         if (day.regions && day.regions.length > 0) {
           day.regions.forEach(r => {
@@ -509,7 +501,6 @@
         }
       });
 
-      // 3. 如果帳號是全新空的，給幾個基礎熱門區域引導
       if (regions.size === 0) {
         ["弘大", "明洞", "聖水"].forEach(r => regions.add(r));
       }
@@ -1501,6 +1492,35 @@
       }
     };
 
+    // V45: 新增自動偵測區域功能 (即時掃描輸入框文字)
+    window.autoDetectRegion = function() {
+      const select = document.getElementById('pRegionSelect');
+      
+      // 如果使用者已經在自訂區域輸入，就不要自動切換干擾他
+      if (select.value === 'custom') return;
+
+      const text = (
+        document.getElementById('pName').value + " " +
+        document.getElementById('pMapQ').value + " " +
+        document.getElementById('pDesc').value
+      ).toLowerCase();
+
+      const regions = getAllAvailableRegions();
+
+      for (let r of regions) {
+        if (text.includes(r.toLowerCase())) {
+          if (select.value !== r) {
+            select.value = r;
+            // 給予視覺回饋，讓使用者知道系統幫他自動選擇了
+            select.style.transition = "background-color 0.3s";
+            select.style.backgroundColor = "#dcfce7"; 
+            setTimeout(() => select.style.backgroundColor = "#fff", 800);
+          }
+          break;
+        }
+      }
+    };
+
     window.openNewPocketModal = function() {
       document.getElementById('pModalTitle').innerText = '✨ 新增名單';
       document.getElementById('pBtnSave').innerText = '加入名單';
@@ -1690,4 +1710,3 @@
   </script>
 </body>
 </html>
-[/source]
