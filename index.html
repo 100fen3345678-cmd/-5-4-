@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V41 </title>
+  <title>Seoul Trip - V42 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -163,25 +163,17 @@
 
     #infoDesc { white-space: pre-wrap; word-break: break-word; }
 
-    /* V41: 手機版 UI 大瘦身與解釘選 */
     @media (max-width: 768px) {
-      /* 1. Header 瘦身與取消釘選 */
       .header { position: relative; top: 0; padding: 10px 12px; z-index: 10; }
       .header h1 { font-size: 18px; margin-bottom: 2px; }
       .header p { font-size: 11px; }
-      
-      /* 2. Tabs 取代 Header 成為頂部釘選層 */
       .tabs { top: 0; padding: 0; }
       .tab { padding: 12px 16px; font-size: 14px; }
-      
-      /* 3. 地圖取消釘選，調整為適當高度，讓出閱讀空間 */
       .split-layout { flex-direction: column; padding: 10px; gap: 12px; }
       .map-pane { position: relative; top: 0; height: 30vh; width: 100%; border-radius: 12px; margin-bottom: 4px; }
       .list-pane { width: 100%; min-height: auto; }
       .map-toolbar { padding: 8px 12px; }
       .naver-list-btn, .naver-toilet-btn { font-size: 12px; padding: 6px 10px; }
-      
-      /* 4. Timeline 區塊瘦身 (減小 Padding 與字體) */
       .timeline-item { padding: 12px 12px 12px 40px; margin-bottom: 12px; }
       .block-drag-handle { width: 30px; font-size: 14px; }
       .timeline-header { gap: 10px; flex-direction: column; }
@@ -189,17 +181,19 @@
       .content-col { padding-right: 0; }
       .content-col h3 { font-size: 15px; margin-bottom: 2px; }
       .content-col p { font-size: 13px; }
-      
-      /* 5. 行動按鈕防重疊：改為行內相對定位 */
       .action-btns { position: relative; top: auto; right: auto; justify-content: flex-end; margin-top: 10px; width: 100%; }
-      
-      /* 6. 口袋名單卡片瘦身 */
       .pocket-card { padding: 10px 10px 10px 40px; }
       .pocket-drag-handle { width: 30px; font-size: 14px; }
       .pocket-card h4 { margin: 0 0 4px 0; font-size: 14px; }
       .pocket-card p { font-size: 12px; margin-bottom: 30px; }
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* V42: 防止拖曳時反白選取文字 */
+    body.is-dragging * {
+      -webkit-user-select: none !important;
+      user-select: none !important;
+    }
   </style>
 </head>
 <body>
@@ -207,7 +201,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V41 </p>
+      <p>V42 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -665,7 +659,7 @@
         contentContainer.appendChild(content);
         
         renderPocketGrid(dayIndex, 'All');
-        initSortable(dayIndex); // 每次渲染呼叫以綁定 Sortable
+        initSortable(dayIndex); 
       });
     }
 
@@ -896,7 +890,7 @@
       });
     };
 
-    // V41 升級：加入 forceFallback 與 bubbleScroll 徹底解決桌面版拖曳無法捲動頁面的問題
+    // V42: 加入 onStart / onEnd 觸發 is-dragging CSS 類別，防止拖曳時反白文字
     function initSortable(dayIndex) {
       const listEl = document.getElementById(`timeline-list-${dayIndex}`);
       if (listEl) {
@@ -904,7 +898,9 @@
           animation: 150, handle: '.block-drag-handle',
           scroll: true, scrollSensitivity: 80, scrollSpeed: 20,
           forceFallback: true, bubbleScroll: true,
+          onStart: function() { document.body.classList.add('is-dragging'); },
           onEnd: function (evt) {
+            document.body.classList.remove('is-dragging');
             const movedItem = appData[dayIndex].events.splice(evt.oldIndex, 1)[0];
             appData[dayIndex].events.splice(evt.newIndex, 0, movedItem);
             syncWithCloud();
@@ -917,6 +913,7 @@
           group: 'shared-subitems', animation: 150, handle: '.chip-drag-handle',
           scroll: true, scrollSensitivity: 80, scrollSpeed: 20,
           forceFallback: true, bubbleScroll: true,
+          onStart: function() { document.body.classList.add('is-dragging'); },
           onAdd: function (evt) {
             if (evt.from.classList.contains('pocket-grid')) {
               const toDay = parseInt(evt.to.getAttribute('data-day'));
@@ -929,6 +926,7 @@
             }
           },
           onEnd: function (evt) {
+            document.body.classList.remove('is-dragging');
             if (evt.from.classList.contains('sub-items-container') && evt.to && evt.to.classList.contains('sub-items-container')) {
               const fromDay = parseInt(evt.from.getAttribute('data-day')); 
               const toDay = parseInt(evt.to.getAttribute('data-day'));
@@ -951,7 +949,9 @@
           group: { name: 'shared-subitems', pull: 'clone', put: false },
           sort: false, handle: '.pocket-drag-handle', animation: 150,
           scroll: true, scrollSensitivity: 80, scrollSpeed: 20,
-          forceFallback: true, bubbleScroll: true
+          forceFallback: true, bubbleScroll: true,
+          onStart: function() { document.body.classList.add('is-dragging'); },
+          onEnd: function() { document.body.classList.remove('is-dragging'); }
         });
       }
     }
