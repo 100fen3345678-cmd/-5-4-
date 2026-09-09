@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V42 </title>
+  <title>Seoul Trip - V44 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -189,7 +189,6 @@
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* V42: 防止拖曳時反白選取文字 */
     body.is-dragging * {
       -webkit-user-select: none !important;
       user-select: none !important;
@@ -201,7 +200,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V42 </p>
+      <p>V44 </p>
     </div>
     <div class="header-btns">
       <button class="expense-toggle-btn" onclick="toggleExpenseDrawer()">💸 記帳本</button>
@@ -454,12 +453,18 @@
       return safeText.replace(urlRegex, '<a href="$1" target="_blank" onclick="event.stopPropagation()" style="color: #3182ce; text-decoration: underline; font-weight: bold;">$1</a>');
     };
 
+    // V44: 內建首爾全知地圖座標庫 (包含 50+ 個主要區域)
     const seoulCoords = {
-      "望遠": {x: 15, y: 50}, "弘大": {x: 20, y: 50}, "延南": {x: 21, y: 52},
-      "汝矣島": {x: 25, y: 35}, "龍山": {x: 40, y: 35}, "明洞": {x: 45, y: 50},
-      "鐘路": {x: 47, y: 56}, "益善洞": {x: 48, y: 57}, "乙支路": {x: 48, y: 52},
-      "漢南": {x: 50, y: 35}, "東大門": {x: 55, y: 53}, "島山": {x: 60, y: 30},
-      "江南": {x: 62, y: 20}, "聖水": {x: 70, y: 45}, "松坡": {x: 85, y: 20}
+      // 核心西區
+      "望遠": {x: 15, y: 50}, "弘大": {x: 20, y: 50}, "延南": {x: 21, y: 52}, "合井": {x: 19, y: 48}, "上水": {x: 20, y: 47}, "新村": {x: 25, y: 50}, "梨大": {x: 27, y: 50}, "麻浦": {x: 25, y: 42}, "孔德": {x: 28, y: 44}, "汝矣島": {x: 25, y: 35}, "永登浦": {x: 20, y: 30}, "文來": {x: 18, y: 28}, "仙遊島": {x: 18, y: 38},
+      // 核心中區/北區
+      "明洞": {x: 50, y: 48}, "鐘路": {x: 50, y: 55}, "益善洞": {x: 51, y: 56}, "安國": {x: 50, y: 57}, "景福宮": {x: 48, y: 56}, "光化門": {x: 49, y: 54}, "乙支路": {x: 51, y: 50}, "忠武路": {x: 51, y: 48}, "東大門": {x: 55, y: 52}, "新堂": {x: 56, y: 50}, "首爾站": {x: 45, y: 48}, "南大門": {x: 47, y: 47}, "梨泰院": {x: 50, y: 35}, "漢南": {x: 52, y: 34}, "龍山": {x: 45, y: 35}, "三角地": {x: 45, y: 38}, "解放村": {x: 48, y: 37}, "惠化": {x: 55, y: 58}, "大學路": {x: 55, y: 58}, "城北": {x: 58, y: 65},
+      // 核心南區/江南
+      "江南": {x: 60, y: 20}, "驛三": {x: 62, y: 20}, "宣陵": {x: 64, y: 21}, "三成": {x: 66, y: 22}, "狎鷗亭": {x: 58, y: 28}, "新沙": {x: 56, y: 28}, "島山": {x: 59, y: 28}, "清潭": {x: 62, y: 26}, "瑞草": {x: 56, y: 18}, "盤浦": {x: 55, y: 25}, "高速巴士客運站": {x: 54, y: 23}, "蠶室": {x: 80, y: 20}, "松坡": {x: 82, y: 18}, "樂天世界": {x: 80, y: 19},
+      // 核心東區
+      "聖水": {x: 70, y: 45}, "首爾林": {x: 68, y: 43}, "建大": {x: 75, y: 42}, "往十里": {x: 65, y: 48},
+      // 郊區與機場
+      "金浦": {x: -10, y: 45}, "金浦機場": {x: -10, y: 45}, "仁川": {x: -40, y: 30}, "仁川機場": {x: -60, y: 30}, "冠岳": {x: 35, y: 5}, "九老": {x: 10, y: 20}, "加山": {x: 12, y: 18}, "恩平": {x: 30, y: 70}, "蘆原": {x: 65, y: 75}, "江東": {x: 90, y: 30}
     };
 
     function getDistance(r1, r2) {
@@ -484,13 +489,31 @@
     const contentContainer = document.getElementById('content-container');
     const mapIframe = document.getElementById('map-iframe');
 
+    // V44 升級：只抓取「真的有在使用」的區域，保持選單清爽不臃腫
     function getAllAvailableRegions() {
-      const regions = new Set(["弘大", "延南", "聖水", "漢南", "島山", "明洞"]);
+      const regions = new Set();
+      
+      // 1. 掃描口袋名單中有出現的區域
       pocketDB.forEach(item => { 
         if (item.region && item.region !== '其他' && item.region.trim() !== '') {
           regions.add(item.region); 
         }
       });
+
+      // 2. 掃描已經排入行程的區域 (防呆)
+      appData.forEach(day => {
+        if (day.regions && day.regions.length > 0) {
+          day.regions.forEach(r => {
+            if (r !== 'All' && r !== 'All_Global') regions.add(r);
+          });
+        }
+      });
+
+      // 3. 如果帳號是全新空的，給幾個基礎熱門區域引導
+      if (regions.size === 0) {
+        ["弘大", "明洞", "聖水"].forEach(r => regions.add(r));
+      }
+
       return Array.from(regions).sort();
     }
 
@@ -710,6 +733,7 @@
       let nearby = mapped.filter(m => m.dist < 15);
       let medium = mapped.filter(m => m.dist >= 15 && m.dist < 30);
       let far = mapped.filter(m => m.dist >= 30 && m.dist !== 999);
+      let unknown = mapped.filter(m => m.dist === 999);
 
       if (nearby.length > 0) {
         html += '<div style="font-size: 12px; color: #166534; margin-bottom: 6px; font-weight: bold;">🟢 相鄰區域 (極近)</div>';
@@ -727,6 +751,12 @@
         html += '<div style="font-size: 12px; color: #991b1b; margin-bottom: 6px; font-weight: bold;">🔴 較遠區域 (跨越半個首爾)</div>';
         html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
         far.forEach(m => { html += `<label style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
+        html += '</div>';
+      }
+      if (unknown.length > 0) {
+        html += '<div style="font-size: 12px; color: #475569; margin-bottom: 6px; font-weight: bold;">⚪ 未知距離 (新自訂區域)</div>';
+        html += '<div class="region-checkbox-group" style="margin-bottom: 16px;">';
+        unknown.forEach(m => { html += `<label style="background: #f8fafc; color: #475569; border: 1px solid #cbd5e1;" onclick="toggleDynamicRegion('${m.name}')"><span>${m.name}</span></label>`; });
         html += '</div>';
       }
       container.innerHTML = html;
@@ -890,7 +920,6 @@
       });
     };
 
-    // V42: 加入 onStart / onEnd 觸發 is-dragging CSS 類別，防止拖曳時反白文字
     function initSortable(dayIndex) {
       const listEl = document.getElementById(`timeline-list-${dayIndex}`);
       if (listEl) {
@@ -1661,3 +1690,4 @@
   </script>
 </body>
 </html>
+[/source]
