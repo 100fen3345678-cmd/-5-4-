@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V46 </title>
+  <title>Seoul Trip - V47 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -200,7 +200,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V46 </p>
+      <p>V47 </p>
     </div>
     <div class="header-btns">
       <button class="announce-btn" onclick="openAnnounceModal()">📢 公告</button>
@@ -210,20 +210,18 @@
   </div>
   <div class="tabs" id="tabs-container"></div>
 
-  <!-- V46: 專屬公告 Modal -->
+  <!-- V47: 專屬公告 Modal (加入 Index 欄位與動態標題) -->
   <div class="modal-overlay" id="announceModal">
     <div class="modal" style="max-width: 500px;">
       <h3 style="margin-top:0; color:var(--primary);">📢 旅遊公告 / 訂位資訊</h3>
       
-      <!-- 公告列表區 -->
       <div id="announceListContainer" style="margin-bottom: 20px; max-height: 40vh; overflow-y: auto; padding-right: 4px;">
-        <!-- JS 動態產生公告 -->
       </div>
       
       <hr style="border:0; border-top:1px dashed #ccc; margin: 16px 0;">
       
-      <!-- 新增公告表單區 -->
-      <h4 style="margin-top:0;">➕ 新增公告</h4>
+      <input type="hidden" id="annIndex">
+      <h4 style="margin-top:0;" id="annFormTitle">➕ 新增公告</h4>
       <div class="form-group">
         <label>標題 / 餐廳名稱</label>
         <input type="text" id="annTitle" placeholder="例如：10/16 荒謬的生肉 訂位">
@@ -231,7 +229,7 @@
       <div style="display:flex; gap:10px;">
           <div class="form-group" style="flex:1;">
             <label>時間 (選填)</label>
-            <input type="text" id="annTime" placeholder="例如：18:30">
+            <input type="text" id="annTime" placeholder="例如：10/16 18:30">
           </div>
           <div class="form-group" style="flex:2;">
             <label>相關網址 (選填)</label>
@@ -245,7 +243,7 @@
       
       <div class="modal-actions">
         <button class="btn-cancel" onclick="document.getElementById('announceModal').style.display='none'">關閉</button>
-        <button class="btn-save" onclick="saveAnnounce()">發佈公告</button>
+        <button class="btn-save" id="annSaveBtn" onclick="saveAnnounce()">發佈公告</button>
       </div>
     </div>
   </div>
@@ -512,7 +510,6 @@
     let pocketDB = [];
     let expensesDB = []; 
     let archivedPhases = []; 
-    // V46: 新增全域公告資料庫
     let announcementsDB = [];
 
     let currentTabIndices = { 0: 'food', 1: 'food', 2: 'food', 3: 'food', 4: 'food' };
@@ -529,13 +526,11 @@
 
     function getAllAvailableRegions() {
       const regions = new Set();
-      
       pocketDB.forEach(item => { 
         if (item.region && item.region !== '其他' && item.region.trim() !== '') {
           regions.add(item.region); 
         }
       });
-
       appData.forEach(day => {
         if (day.regions && day.regions.length > 0) {
           day.regions.forEach(r => {
@@ -543,11 +538,9 @@
           });
         }
       });
-
       if (regions.size === 0) {
         ["弘大", "明洞", "聖水"].forEach(r => regions.add(r));
       }
-
       return Array.from(regions).sort();
     }
 
@@ -585,7 +578,6 @@
           pocketDB = data.record.pocketDB || [];
           expensesDB = data.record.expensesDB || [];
           archivedPhases = data.record.archivedPhases || [];
-          // V46: 讀取公告資料庫
           announcementsDB = data.record.announcementsDB || [];
         }
       } catch (e) { console.error('載入失敗', e); }
@@ -599,7 +591,6 @@
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          // V46: 同步時包含公告資料庫
           body: JSON.stringify({ appData, pocketDB, expensesDB, archivedPhases, announcementsDB })
         });
       } catch (e) { console.error('同步錯誤', e); }
@@ -723,10 +714,33 @@
       });
     }
 
-    // V46: 公告系統功能實作
+    // V47: 公告無縫編輯與排序邏輯
     window.openAnnounceModal = function() {
+      resetAnnounceForm();
       renderAnnounceList();
       document.getElementById('announceModal').style.display = 'flex';
+    };
+
+    window.resetAnnounceForm = function() {
+      document.getElementById('annIndex').value = '';
+      document.getElementById('annTitle').value = '';
+      document.getElementById('annTime').value = '';
+      document.getElementById('annLink').value = '';
+      document.getElementById('annDesc').value = '';
+      document.getElementById('annFormTitle').innerText = '➕ 新增公告';
+      document.getElementById('annSaveBtn').innerText = '發佈公告';
+    };
+
+    window.editAnnounce = function(idx) {
+      const ann = announcementsDB[idx];
+      if(!ann) return;
+      document.getElementById('annIndex').value = idx;
+      document.getElementById('annTitle').value = ann.title;
+      document.getElementById('annTime').value = ann.time || '';
+      document.getElementById('annLink').value = ann.link || '';
+      document.getElementById('annDesc').value = ann.desc || '';
+      document.getElementById('annFormTitle').innerText = '✏️ 編輯公告';
+      document.getElementById('annSaveBtn').innerText = '儲存修改';
     };
 
     window.renderAnnounceList = function() {
@@ -735,14 +749,26 @@
         container.innerHTML = '<p style="color:#888; font-size:13px; text-align:center;">目前沒有公告或預約資訊。</p>';
         return;
       }
+      
+      // V47: 智慧時間軸排序 (時間有填的在前面且按順序，沒填的沉到底部)
+      announcementsDB.sort((a, b) => {
+        if (!a.time && !b.time) return 0;
+        if (!a.time) return 1;
+        if (!b.time) return -1;
+        return a.time.localeCompare(b.time, undefined, { numeric: true });
+      });
+
       let html = '';
       announcementsDB.forEach((ann, idx) => {
         let linkHtml = ann.link ? `<a href="${ann.link}" target="_blank" style="display:inline-block; margin-top:8px; font-size:12px; background:#e0f2fe; color:#0369a1; padding:6px 10px; border-radius:4px; text-decoration:none; font-weight:bold;">🔗 前往連結</a>` : '';
         let timeHtml = ann.time ? `<span style="font-size:12px; background:#fef08a; color:#854d0e; padding:2px 6px; border-radius:4px; font-weight:bold; margin-right:8px; vertical-align:middle;">🕒 ${ann.time}</span>` : '';
         html += `
           <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px; margin-bottom:10px; position:relative;">
-            <button class="del-btn" onclick="deleteAnnounce(${idx})" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:14px; cursor:pointer; color:#aaa; padding:0;">🗑️</button>
-            <h4 style="margin:0 0 8px 0; font-size:15px; padding-right:20px; color:var(--primary);">${timeHtml}${ann.title}</h4>
+            <div style="position:absolute; top:10px; right:10px; display:flex; gap:8px;">
+              <button class="edit-btn" onclick="editAnnounce(${idx})" style="background:none; border:none; font-size:14px; cursor:pointer; color:#aaa; padding:0;">✏️</button>
+              <button class="del-btn" onclick="deleteAnnounce(${idx})" style="background:none; border:none; font-size:14px; cursor:pointer; color:#aaa; padding:0;">🗑️</button>
+            </div>
+            <h4 style="margin:0 0 8px 0; font-size:15px; padding-right:50px; color:var(--primary);">${timeHtml}${ann.title}</h4>
             <p style="margin:0; font-size:13px; color:#475569; white-space:pre-wrap; word-break:break-word;">${linkify(ann.desc)}</p>
             ${linkHtml}
           </div>
@@ -752,6 +778,7 @@
     };
 
     window.saveAnnounce = function() {
+      const idx = document.getElementById('annIndex').value;
       const title = document.getElementById('annTitle').value.trim();
       const time = document.getElementById('annTime').value.trim();
       const link = document.getElementById('annLink').value.trim();
@@ -759,16 +786,17 @@
 
       if (!title) return alert("請輸入公告或預約標題！");
 
-      announcementsDB.push({ title, time, link, desc });
-      syncWithCloud();
+      const annData = { title, time, link, desc };
 
-      // 清空輸入框
-      document.getElementById('annTitle').value = '';
-      document.getElementById('annTime').value = '';
-      document.getElementById('annLink').value = '';
-      document.getElementById('annDesc').value = '';
+      if (idx !== '') {
+        announcementsDB[idx] = annData;
+      } else {
+        announcementsDB.push(annData);
+      }
       
-      renderAnnounceList();
+      syncWithCloud();
+      resetAnnounceForm();
+      renderAnnounceList(); 
     };
 
     window.deleteAnnounce = function(idx) {
@@ -778,7 +806,6 @@
         renderAnnounceList();
       }
     };
-
 
     window.openDayRegionModal = function(dayIndex) {
       document.getElementById('drDayIndex').value = dayIndex;
