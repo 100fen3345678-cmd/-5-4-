@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V47 </title>
+  <title>Seoul Trip - V48 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -200,7 +200,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V47 </p>
+      <p>V48 </p>
     </div>
     <div class="header-btns">
       <button class="announce-btn" onclick="openAnnounceModal()">📢 公告</button>
@@ -210,7 +210,6 @@
   </div>
   <div class="tabs" id="tabs-container"></div>
 
-  <!-- V47: 專屬公告 Modal (加入 Index 欄位與動態標題) -->
   <div class="modal-overlay" id="announceModal">
     <div class="modal" style="max-width: 500px;">
       <h3 style="margin-top:0; color:var(--primary);">📢 旅遊公告 / 訂位資訊</h3>
@@ -525,22 +524,12 @@
     const mapIframe = document.getElementById('map-iframe');
 
     function getAllAvailableRegions() {
-      const regions = new Set();
+      const regions = new Set(Object.keys(seoulCoords));
       pocketDB.forEach(item => { 
         if (item.region && item.region !== '其他' && item.region.trim() !== '') {
           regions.add(item.region); 
         }
       });
-      appData.forEach(day => {
-        if (day.regions && day.regions.length > 0) {
-          day.regions.forEach(r => {
-            if (r !== 'All' && r !== 'All_Global') regions.add(r);
-          });
-        }
-      });
-      if (regions.size === 0) {
-        ["弘大", "明洞", "聖水"].forEach(r => regions.add(r));
-      }
       return Array.from(regions).sort();
     }
 
@@ -714,7 +703,6 @@
       });
     }
 
-    // V47: 公告無縫編輯與排序邏輯
     window.openAnnounceModal = function() {
       resetAnnounceForm();
       renderAnnounceList();
@@ -750,7 +738,6 @@
         return;
       }
       
-      // V47: 智慧時間軸排序 (時間有填的在前面且按順序，沒填的沉到底部)
       announcementsDB.sort((a, b) => {
         if (!a.time && !b.time) return 0;
         if (!a.time) return 1;
@@ -1132,6 +1119,7 @@
       btn.innerText = oldText;
     };
 
+    // V48 修復：鎖定核取方塊的寬度，避免 flex:1 擠壓文字
     window.renderParticipantList = function(selectedData = null) {
       const container = document.getElementById('expParticipantsList');
       let html = '';
@@ -1156,9 +1144,9 @@
 
         html += `
           <div style="display:flex; align-items:center; justify-content:space-between; background:${bgColor}; padding:8px 12px; border-radius:8px; margin-bottom:6px; border:1px solid ${borderColor}; transition:0.2s;" id="row-${t}">
-            <label style="display:flex; align-items:center; gap:8px; margin:0; cursor:pointer; flex:1;">
-              <input type="checkbox" value="${t}" ${isChecked ? 'checked' : ''} onchange="toggleWeightRow('${t}', this)">
-              <span style="font-weight:${isChecked ? 'bold' : 'normal'}; color:${textColor}; font-size:14px;" id="name-${t}">${t}</span>
+            <label style="display:flex; align-items:center; gap:8px; margin:0; cursor:pointer; flex:1; overflow:hidden;">
+              <input type="checkbox" value="${t}" ${isChecked ? 'checked' : ''} onchange="toggleWeightRow('${t}', this)" style="width:18px; height:18px; flex-shrink:0; margin:0;">
+              <span style="font-weight:${isChecked ? 'bold' : 'normal'}; color:${textColor}; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="name-${t}">${t}</span>
             </label>
             <div style="display:flex; align-items:center; gap:6px; opacity:${ctrlOpacity}; pointer-events:${ctrlEvents};" id="weight-ctrl-${t}">
               <button type="button" style="background:#fff; border:1px solid #ccc; border-radius:4px; width:26px; height:26px; cursor:pointer; font-weight:bold; color:#555;" onclick="changeWeight('${t}', -0.5)">-</button>
@@ -1566,7 +1554,7 @@
       
       displayItems.forEach((item) => {
         const escName = item.name.replace(/"/g, '&quot;'); const escQuery = item.mapQuery.replace(/"/g, '&quot;');
-        const safeName = item.name.replace(/'/g, "\\'"); const safeQuery = item.mapQuery.replace(/'/g, "\\'");
+        const safeName = item.name.replace(/'/g, "\'"); const safeQuery = item.mapQuery.replace(/'/g, "\'");
         
         const scheduledDays = getScheduledDays(item.name);
         const schedBadgeHtml = scheduledDays.length > 0 ? `<div class="scheduled-badge" style="position:static; margin-bottom:4px;">📍 排入 ${scheduledDays.join(', ')}</div>` : '';
