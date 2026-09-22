@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V48 </title>
+  <title>Seoul Trip - V49 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -200,7 +200,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V48 </p>
+      <p>V49 Discord 智慧推播連動版</p>
     </div>
     <div class="header-btns">
       <button class="announce-btn" onclick="openAnnounceModal()">📢 公告</button>
@@ -450,6 +450,19 @@
   </div>
 
   <script>
+    // ⚠️ 已經為你替換成專屬 Google Apps Script 網頁應用程式網址
+    const DISCORD_GAS_URL = 'https://script.google.com/macros/s/AKfycbzszZ8cimnrmg7Rw7va-62uMjG36n3f1MHSKkxyLU2F9Pzdr_Ca9gUK36_0UKHb0Bxj/exec';
+
+    function sendDiscordNotification(message) {
+      if (!DISCORD_GAS_URL || DISCORD_GAS_URL === 'YOUR_GAS_APP_URL_HERE') return;
+      fetch(DISCORD_GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'message=' + encodeURIComponent(message)
+      }).catch(err => console.error('推播發送失敗', err));
+    }
+
     const JSONBIN_BIN_ID = '6a9da168da38895dfe4076e7'; 
     const JSONBIN_API_KEY = '$2a$10$7PzBRwuMIt9Xl3Xl1b1h/eWFHQUVbxmVKAwrj8A009EU62i2lB6EO';
 
@@ -779,6 +792,8 @@
         announcementsDB[idx] = annData;
       } else {
         announcementsDB.push(annData);
+        const msg = `📢 【最新公告】${title} ${time ? '('+time+')' : ''}\n👉 快去網頁版查看詳細資訊！`;
+        sendDiscordNotification(msg);
       }
       
       syncWithCloud();
@@ -1119,7 +1134,6 @@
       btn.innerText = oldText;
     };
 
-    // V48 修復：鎖定核取方塊的寬度，避免 flex:1 擠壓文字
     window.renderParticipantList = function(selectedData = null) {
       const container = document.getElementById('expParticipantsList');
       let html = '';
@@ -1247,6 +1261,8 @@
         expensesDB[index] = expenseData;
       } else {
         expensesDB.push(expenseData);
+        const msg = `💸 【新增記帳】${payer} 剛記了一筆：${title} (${currency} ${amount.toLocaleString()})`;
+        sendDiscordNotification(msg);
       }
 
       syncWithCloud();
