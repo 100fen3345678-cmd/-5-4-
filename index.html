@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Seoul Trip - V49 </title>
+  <title>Seoul Trip - V50 </title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     :root { --primary: #FF5A5F; --primary-light: #FF8A8E; --bg: #F7F7F9; --card-bg: #FFFFFF; --text-main: #484848; --text-muted: #767676; }
@@ -200,7 +200,7 @@
   <div class="header">
     <div class="header-content">
       <h1>首爾 5 天 4 夜</h1>
-      <p>V49 Discord 智慧推播連動版</p>
+      <p>V50 全域聯動推播版</p>
     </div>
     <div class="header-btns">
       <button class="announce-btn" onclick="openAnnounceModal()">📢 公告</button>
@@ -214,8 +214,7 @@
     <div class="modal" style="max-width: 500px;">
       <h3 style="margin-top:0; color:var(--primary);">📢 旅遊公告 / 訂位資訊</h3>
       
-      <div id="announceListContainer" style="margin-bottom: 20px; max-height: 40vh; overflow-y: auto; padding-right: 4px;">
-      </div>
+      <div id="announceListContainer" style="margin-bottom: 20px; max-height: 40vh; overflow-y: auto; padding-right: 4px;"></div>
       
       <hr style="border:0; border-top:1px dashed #ccc; margin: 16px 0;">
       
@@ -253,7 +252,6 @@
       <button class="drawer-close" onclick="toggleExpenseDrawer()">×</button>
     </div>
     <div class="drawer-body">
-      
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; background: #e0f2fe; padding: 10px 12px; border-radius: 8px; border: 1px solid #bae6fd;">
         <span style="font-size:13px; font-weight:bold; color:#0369a1;">👤 專屬視角：</span>
         <select id="personalViewSelect" onchange="renderExpenseDrawer()" style="padding:6px; border-radius:6px; border: 1px solid #7dd3fc; font-size:13px; flex:1; font-weight:bold; color:#0c4a6e; background:#f0f9ff;">
@@ -273,10 +271,8 @@
       </div>
 
       <div id="settlementContainer"></div>
-
       <h4 style="margin: 16px 0 8px 0; font-size: 14px; color: #475569;" id="expenseListTitle">📜 當前未結算流水帳</h4>
       <div id="expenseListContainer"></div>
-
       <div id="archivedPhasesContainer" style="margin-top: 24px;"></div>
     </div>
   </div>
@@ -312,7 +308,6 @@
         <label>代墊項目 / 名稱</label>
         <input type="text" id="expTitle" placeholder="例如: 機票、住宿、弘大烤肉...">
       </div>
-      
       <div style="display: flex; gap: 10px;">
         <div class="form-group" style="flex: 1;">
           <label>幣值 (Currency)</label>
@@ -326,7 +321,6 @@
           <input type="number" id="expAmount" placeholder="例如: 50000">
         </div>
       </div>
-
       <div class="form-group" id="krwRateGroup">
         <label>當筆換算匯率 (KRW : 1 TWD)</label>
         <div style="display: flex; gap: 8px;">
@@ -335,7 +329,6 @@
         </div>
         <div id="rateHint" style="font-size:11px; margin-top:6px;"></div>
       </div>
-
       <div class="form-group">
         <label>誰付錢 (代墊者)</label>
         <select id="expPayer">
@@ -347,13 +340,10 @@
           <option value="ShowChen">ShowChen</option>
         </select>
       </div>
-      
       <div class="form-group">
         <label>參與拆帳人員與權重 (未勾選即不參與)</label>
-        <div id="expParticipantsList" style="display: flex; flex-direction: column; max-height: 250px; overflow-y: auto; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0;">
-        </div>
+        <div id="expParticipantsList" style="display: flex; flex-direction: column; max-height: 250px; overflow-y: auto; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0;"></div>
       </div>
-
       <div class="modal-actions">
         <button class="btn-cancel" onclick="document.getElementById('expenseModal').style.display='none'">取消</button>
         <button class="btn-save" onclick="saveExpense()">儲存帳目</button>
@@ -369,7 +359,6 @@
       <h3 style="margin-top:0;" id="bModalTitle">➕ 新增區間</h3>
       <input type="hidden" id="bDayIndex">
       <input type="hidden" id="bEvIndex">
-      
       <div class="form-group">
         <label>區塊標記顏色</label>
         <select id="bColor">
@@ -383,7 +372,6 @@
           <option value="#f1f5f9">⚪ 淺灰 (彈性備案)</option>
         </select>
       </div>
-
       <div class="form-group"><label>時間</label><input type="text" id="bTime"></div>
       <div class="form-group"><label>區間名稱</label><input type="text" id="bTitle"></div>
       <div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="bMapQ" placeholder="輸入關鍵字"></div>
@@ -400,7 +388,6 @@
       <h3 style="margin-top:0;" id="pModalTitle">✨ 新增名單</h3>
       <input type="hidden" id="pOriginalName">
       <div class="form-group"><label>名稱</label><input type="text" id="pName" oninput="autoDetectRegion()"></div>
-      
       <div style="display: flex; gap: 10px;">
         <div class="form-group" style="flex: 1;">
           <label>分類</label>
@@ -414,16 +401,13 @@
           <select id="pRegionSelect" onchange="toggleCustomRegion()"></select>
         </div>
       </div>
-      
       <div class="form-group" id="customRegionGroup" style="display: none;">
         <label>輸入自訂區域</label>
         <input type="text" id="pRegionCustom" placeholder="例如: 安國、江南...">
       </div>
-
       <div class="form-group"><label>Google Map 關鍵字</label><input type="text" id="pMapQ" placeholder="例如: 弘大 豬肉商會" oninput="autoDetectRegion()"></div>
       <div class="form-group"><label>Naver Map 專屬連結 (選填)</label><input type="text" id="pNaverLink" placeholder="例如: https://naver.me/..."></div>
       <div class="form-group"><label>備註 (貼上網址會自動轉換)</label><textarea id="pDesc" rows="2" oninput="autoDetectRegion()"></textarea></div>
-      
       <div class="modal-actions">
         <button class="btn-cancel" onclick="document.getElementById('pocketModal').style.display='none'">取消</button>
         <button class="btn-save" onclick="saveToPocket()" id="pBtnSave">加入名單</button>
@@ -450,7 +434,6 @@
   </div>
 
   <script>
-    // ⚠️ 已經為你替換成專屬 Google Apps Script 網頁應用程式網址
     const DISCORD_GAS_URL = 'https://script.google.com/macros/s/AKfycbzszZ8cimnrmg7Rw7va-62uMjG36n3f1MHSKkxyLU2F9Pzdr_Ca9gUK36_0UKHb0Bxj/exec';
 
     function sendDiscordNotification(message) {
@@ -790,10 +773,10 @@
 
       if (idx !== '') {
         announcementsDB[idx] = annData;
+        sendDiscordNotification(`✏️ 【修改公告】更新了內容：${title}`);
       } else {
         announcementsDB.push(annData);
-        const msg = `📢 【最新公告】${title} ${time ? '('+time+')' : ''}\n👉 快去網頁版查看詳細資訊！`;
-        sendDiscordNotification(msg);
+        sendDiscordNotification(`📢 【最新公告】${title} ${time ? '('+time+')' : ''}\n👉 快去網頁版查看詳細資訊！`);
       }
       
       syncWithCloud();
@@ -803,6 +786,8 @@
 
     window.deleteAnnounce = function(idx) {
       if (confirm("確定要刪除這則公告嗎？")) {
+        const ann = announcementsDB[idx];
+        sendDiscordNotification(`🗑️ 【刪除公告】移除了：${ann.title}`);
         announcementsDB.splice(idx, 1);
         syncWithCloud();
         renderAnnounceList();
@@ -987,10 +972,12 @@
       if (evIndexStr === '') {
         newBlock.subItems = []; 
         appData[dayIndex].events.push(newBlock);
+        sendDiscordNotification(`📅 【新增行程】第 ${dayIndex + 1} 天加了新區間：${newBlock.title}`);
       } else {
         const idx = parseInt(evIndexStr, 10);
         newBlock.subItems = appData[dayIndex].events[idx].subItems || [];
         appData[dayIndex].events[idx] = newBlock;
+        sendDiscordNotification(`✏️ 【修改行程】第 ${dayIndex + 1} 天更新了區間：${newBlock.title}`);
       }
       
       appData[dayIndex].events.sort((a, b) => a.time.localeCompare(b.time));
@@ -1008,7 +995,7 @@
 
     window.openSnapshotModal = function(dayIndex) {
       const day = appData[dayIndex];
-      let text = `【 ${day.label} 離線快照 】\n`;
+      let text = `【 ${day.label} 離快快照 】\n`;
       if(day.subtitle) text += `副標題：${day.subtitle}\n`;
       text += `區域：${day.regions && day.regions.length > 0 ? day.regions.join(' / ') : '未設定'}\n`;
       text += `==============================\n\n`;
@@ -1053,9 +1040,13 @@
           onStart: function() { document.body.classList.add('is-dragging'); },
           onEnd: function (evt) {
             document.body.classList.remove('is-dragging');
-            const movedItem = appData[dayIndex].events.splice(evt.oldIndex, 1)[0];
-            appData[dayIndex].events.splice(evt.newIndex, 0, movedItem);
-            syncWithCloud();
+            // 只有真的改變順序才推播
+            if (evt.oldIndex !== evt.newIndex) {
+              const movedItem = appData[dayIndex].events.splice(evt.oldIndex, 1)[0];
+              appData[dayIndex].events.splice(evt.newIndex, 0, movedItem);
+              sendDiscordNotification(`🔄 【行程異動】第 ${dayIndex + 1} 天的行程被重新排列了！`);
+              syncWithCloud();
+            }
           }
         });
       }
@@ -1074,6 +1065,7 @@
               const mapQuery = evt.item.getAttribute('data-mapquery');
               
               appData[toDay].events[toEv].subItems.splice(evt.newIndex, 0, { name: name, mapQuery: mapQuery });
+              sendDiscordNotification(`📍 【加入行程】第 ${toDay + 1} 天加入了：${name}`);
               syncWithCloud(); renderApp(); 
             }
           },
@@ -1086,9 +1078,13 @@
               const toEv = parseInt(evt.to.getAttribute('data-event'));
               
               if (!isNaN(fromDay) && !isNaN(toDay)) {
-                const itemData = appData[fromDay].events[fromEv].subItems.splice(evt.oldIndex, 1)[0];
-                appData[toDay].events[toEv].subItems.splice(evt.newIndex, 0, itemData);
-                syncWithCloud(); renderApp(); 
+                // 只有跨天、跨區塊，或同區塊改變順序才推播
+                if (fromDay !== toDay || fromEv !== toEv || evt.oldIndex !== evt.newIndex) {
+                  const itemData = appData[fromDay].events[fromEv].subItems.splice(evt.oldIndex, 1)[0];
+                  appData[toDay].events[toEv].subItems.splice(evt.newIndex, 0, itemData);
+                  sendDiscordNotification(`🔄 【行程異動】第 ${toDay + 1} 天的景點順序被調整了！`);
+                  syncWithCloud(); renderApp(); 
+                }
               }
             }
           }
@@ -1259,10 +1255,10 @@
 
       if (index !== '') {
         expensesDB[index] = expenseData;
+        sendDiscordNotification(`✏️ 【修改記帳】${payer} 修改了：${title} (${currency} ${amount.toLocaleString()})`);
       } else {
         expensesDB.push(expenseData);
-        const msg = `💸 【新增記帳】${payer} 剛記了一筆：${title} (${currency} ${amount.toLocaleString()})`;
-        sendDiscordNotification(msg);
+        sendDiscordNotification(`💸 【新增記帳】${payer} 剛記了一筆：${title} (${currency} ${amount.toLocaleString()})`);
       }
 
       syncWithCloud();
@@ -1272,6 +1268,8 @@
 
     window.deleteExpense = function(index) {
       if(confirm("確定要刪除這筆記帳嗎？")) {
+        const exp = expensesDB[index];
+        sendDiscordNotification(`🗑️ 【刪除記帳】移除了帳目：${exp.title}`);
         expensesDB.splice(index, 1);
         syncWithCloud();
         renderExpenseDrawer();
@@ -1707,11 +1705,13 @@
     window.confirmAddBlock = function() {
       const dayIndex = parseInt(document.getElementById('bsDayIndex').value, 10);
       const blockIndex = parseInt(document.getElementById('bsBlockSelect').value, 10);
+      const itemName = document.getElementById('bsItemName').innerText;
       if (!appData[dayIndex].events[blockIndex].subItems) appData[dayIndex].events[blockIndex].subItems = [];
       appData[dayIndex].events[blockIndex].subItems.push({ 
-        name: document.getElementById('bsItemName').innerText, 
+        name: itemName, 
         mapQuery: document.getElementById('bsItemMapQ').value 
       });
+      sendDiscordNotification(`📍 【加入行程】第 ${dayIndex + 1} 天加入了：${itemName}`);
       syncWithCloud(); document.getElementById('blockSelectModal').style.display = 'none';
       
       pocketOpenState[dayIndex] = true; 
@@ -1720,7 +1720,12 @@
     };
 
     window.removeSubItem = function(dayIndex, evIndex, subIdx) {
-      if(confirm('確定要從這個區間移除此項目嗎？')) { appData[dayIndex].events[evIndex].subItems.splice(subIdx, 1); syncWithCloud(); renderApp(); switchTab(dayIndex); }
+      if(confirm('確定要從這個區間移除此項目嗎？')) { 
+        const name = appData[dayIndex].events[evIndex].subItems[subIdx].name;
+        appData[dayIndex].events[evIndex].subItems.splice(subIdx, 1); 
+        sendDiscordNotification(`🗑️ 【刪除景點】第 ${dayIndex + 1} 天移除了：${name}`);
+        syncWithCloud(); renderApp(); switchTab(dayIndex); 
+      }
     };
 
     window.deleteFromPocket = function(name) {
@@ -1776,7 +1781,12 @@
     };
 
     window.deleteEvent = function(dayIndex, eventIndex) {
-      if(confirm('確定要移除整個時間區間嗎？')) { appData[dayIndex].events.splice(eventIndex, 1); syncWithCloud(); renderApp(); switchTab(dayIndex); }
+      if(confirm('確定要移除整個時間區間嗎？')) { 
+        const title = appData[dayIndex].events[eventIndex].title;
+        appData[dayIndex].events.splice(eventIndex, 1); 
+        sendDiscordNotification(`🗑️ 【刪除行程】第 ${dayIndex + 1} 天移除了：${title}`);
+        syncWithCloud(); renderApp(); switchTab(dayIndex); 
+      }
     };
 
     window.updateMap = function(query, cardElement) {
